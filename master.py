@@ -48,7 +48,10 @@ class Master(object):
 	def basic_ping(self):
 		return 'master working'		# test purpose only
 
-
+	def call_sender(self, sender_ip):
+		s = Pyro4.Proxy('PYRONAME:'+sender_ip+'_sender')
+		s.basic_ping()
+		
 
 def main():
 	master = Master()

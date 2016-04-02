@@ -12,18 +12,21 @@ properties = {
 	'external' :True 
 }
 
+app = bottle.Bottle()
 
 
 def get_instance(plugin):
 	logger.info('[PCD Module broker] YO !!!!!')
 	instance = pcd_module_class(plugin)
+	app.route('/', method='GET')(instance.index)
+	app.route('/', method='POST')(instance.index_post)
 	return instance
 
-app = bottle.Bottle()
 
 
 class pcd_module_class(BaseModule):
 	def __init__(self, modconf):
+		self.master = None
 		BaseModule.__init__(self, modconf)
 
 	def init(self):
@@ -45,16 +48,15 @@ class pcd_module_class(BaseModule):
 			fh.write(h.get_name() + ': ' + addr + '\n')
 		fh.close()
 
-	@app.route("/",method = "GET")
-	def index():
+	def index(self):
 		return template('index.tpl')
-	@app.route("/",method = "POST")
-	def index_post():
-		s = request.forms.get('source')
-		d = request.forms.get('destination')
-		logger.info('***********' + s + '	'+d+'**********')
+	def index_post(self):
+		logger.info('***** calling master *****')
+		self.master.call_sender('192.168.1.5')
+		logger.info('***** master called *****')
 
 	def main(self):
+		self.master = Pyro4.Proxy('PYRONAME:master')
 		app.run(host='localhost', port=8080)
 
 
