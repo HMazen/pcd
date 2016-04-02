@@ -4,7 +4,8 @@ from bottle import request, response, template, route, view
 from master import Master
 import Pyro4
 import bottle
-
+import os
+bottle.TEMPLATE_PATH.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "views")))
 properties = {
 	'daemons' : ['arbiter'],
 	'type' : 'pcd',
@@ -47,6 +48,11 @@ class pcd_module_class(BaseModule):
 	@app.route("/",method = "GET")
 	def index():
 		return template('index.tpl')
+	@app.route("/",method = "POST")
+	def index_post():
+		s = request.forms.get('source')
+		d = request.forms.get('destination')
+		logger.info('***********' + s + '	'+d+'**********')
 
 	def main(self):
 		app.run(host='localhost', port=8080)

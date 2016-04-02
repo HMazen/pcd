@@ -57,7 +57,7 @@ def main():
     {
         s_obj: sender_name,    
         r_obj: recv_name            
-    },
+    },host ="192.168.1.2",
     ns=True)
 
 if __name__ == '__main__':
