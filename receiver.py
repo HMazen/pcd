@@ -1,5 +1,5 @@
 import Pyro4
-
+#modified
 class Receiver(object):
 
 	def __init__(self):
