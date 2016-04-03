@@ -1,4 +1,5 @@
 import Pyro4
+from subprocess import *
 
 class Sender(object):
 
@@ -58,5 +59,15 @@ class Sender(object):
 		pass
 
 	def check_requirments(self):
-		return True
+		try:
+			command=["iperf3","-v"]
+			out = Popen(command, stdout = PIPE,stderr= PIPE)
+			(stdout,stderr) = out.communicate()
+			
+			command=["ITGSend","-h"]
+                        out = Popen(command, stdout = PIPE,stderr= PIPE)
+                        (stdout,stderr) = out.communicate()
+			return True
+		except:
+			return False
 

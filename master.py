@@ -1,5 +1,9 @@
 import Pyro4
 
+
+
+
+
 class Master(object):
 
 	def __init__(self):
@@ -21,19 +25,25 @@ class Master(object):
 		
 		for sender in senders:
 			try:
-				pass
+				if not sender.check_requirments():
+					unreach_senders.append(sender)
 				# get remote sender
 			except e:
 				unreach_senders.append(sender)
 
 		for recv in receivers:
 			try:
-				pass
+				result_check = recv.check_requirments()
+				print result_check
+				if not result_check:
+                                        unreach_receivers.append(recv)
+				elif result_check == 'server is already running':
+					print result_check
 				# get remote sender
 			except e:
 				unreach_receivers.append(recv)
-
 		# process check results
+		#TODO : traiter le cas ou il y a des senders ou receivers inaccessibe
 		
 	def has_pending_compaings(self):
 		return len(pending_compaigns)
@@ -69,4 +79,8 @@ def main():
 
 
 if __name__ == '__main__':
-	main()
+	master = Master()
+	s = Pyro4.Proxy('PYRONAME:192.168.1.5_sender')
+	r = Pyro4.Proxy('PYRONAME:192.168.1.5_receiver')
+	master.check_hosts_availability([s], [r])
+
