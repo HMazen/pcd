@@ -4,8 +4,8 @@ class flow_config(object):
 
 	def __init__(self):
 		self.flow_id = 123456
-		self.source = 'localhost'	# source node address
-		self.destination = ''		# destination node address
+		self.source = '192.168.1.5'	# source node address
+		self.destination = '192.168.1.5'		# destination node address
 		self.protocol = 'tcp'		# protocol type
 		self.ps = 1500				# packet size in bytes
 		self.ps_distro = ''			# packet size distribution
@@ -16,7 +16,7 @@ class flow_config(object):
 		self.mesure = None
 
 
-class compaign_connfig(object):
+class compaign_config(object):
 	''' Holds the list of flows defining the compaign '''
 	def __init__(self, flows = []):
 		self.flows = flows
@@ -32,7 +32,7 @@ class compaign_connfig(object):
 
 	def get_receivers(self):
 		r = []
-		for flow in flows:
+		for flow in self.flows:
 			r.append(flow.destination)
 		return r
 

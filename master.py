@@ -1,5 +1,5 @@
 import Pyro4
-
+from utilities import *
 
 
 
@@ -10,12 +10,18 @@ class Master(object):
 		self.pending_compaigns = []
 		self.pending_flow_results = []
 		self.results = []
+		self.current_senders = []
+		self.current_receivers = []
 
 	def post_compaign_config(self, config):
-		if has_pending_compaings(): return
+		if self.has_pending_compaigns(): return
 		self.pending_compaigns.append(config)
-		check_hosts_availability(config.get_senders(), config.get_receivers())
-		
+		result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
+		if result_check == True:
+			for sender in self.current_senders:
+				result = sender.start_compaign()
+			#TODO: céer un processus pour chaque sender
+			#TODO: traiter l'erreur dans le cas de l'échec de start_compaign
 
 	def check_hosts_availability(self, senders, receivers):
 		''' Internal method to check hosts 
@@ -25,28 +31,36 @@ class Master(object):
 		
 		for sender in senders:
 			try:
-				if not sender.check_requirments():
+				s = Pyro4.Proxy('PYRONAME:'+sender+'_sender')
+				if not s.check_requirments():
 					unreach_senders.append(sender)
-				# get remote sender
-			except e:
+				else:
+					self.current_senders.append(s)
+			except:
 				unreach_senders.append(sender)
 
 		for recv in receivers:
 			try:
-				result_check = recv.check_requirments()
-				print result_check
+				r = Pyro4.Proxy('PYRONAME:'+recv+'_receiver')
+				result_check = r.check_requirments()
 				if not result_check:
                                         unreach_receivers.append(recv)
 				elif result_check == 'server is already running':
 					print result_check
-				# get remote sender
-			except e:
+					#TODO: traiter le cas de "server is running"
+				else:
+					self.current_receivers.append(r)
+			except:
 				unreach_receivers.append(recv)
+		if not unreach_senders and not unreach_receivers:
+			return True
+		else:
+			return False
 		# process check results
 		#TODO : traiter le cas ou il y a des senders ou receivers inaccessibe
 		
-	def has_pending_compaings(self):
-		return len(pending_compaigns)
+	def has_pending_compaigns(self):
+		return len(self.pending_compaigns)
 
 	def post_result(self, result):
 		''' A sender uses this method to deposit a result '''
@@ -80,7 +94,6 @@ def main():
 
 if __name__ == '__main__':
 	master = Master()
-	s = Pyro4.Proxy('PYRONAME:192.168.1.5_sender')
-	r = Pyro4.Proxy('PYRONAME:192.168.1.5_receiver')
-	master.check_hosts_availability([s], [r])
+	config = compaign_config([flow_config()])
+	master.post_compaign_config(config)	
 
