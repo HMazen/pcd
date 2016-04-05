@@ -29,7 +29,7 @@ class Receiver(object):
 
     def check_requirments(self):
         try:
-            command = ["ITGRecv"]
+            command = ["iperf3", "-s", "--logfile", "log"]
             if not self.proc:
                 self.proc = multiprocessing.Process(target=job, args=(command,))
                 self.proc.start()
@@ -41,13 +41,14 @@ class Receiver(object):
             else:
                 return "server is already running"
         except Exception as e:
+            print str(e)
             return str(e)
 
     def terminate_proc(self):
         if self.proc:
             self.proc.terminate()
             ps = Popen(('ps', '-ef'), stdout=PIPE)
-            output = check_output(('grep', '[I]TGRecv'), stdin=ps.stdout)
+            output = check_output(('grep', '[i]perf3'), stdin=ps.stdout)
             ps.wait()
             server_pid = output.split()[1]
             if server_pid:

@@ -57,9 +57,10 @@ class Sender(object):
     def start_compaign(self):
         for flow in self.current_flows:
             if self.check_requirments():
-                command = ["iperf3", "-c"]
+                command = ["iperf3", "-c", flow.destination, "-n", "500"]
                 out = Popen(command, stdout=PIPE, stderr=PIPE)
                 (stdout, stderr) = out.communicate()
+                print stdout
 
                 # TODO: verifier le fonctionnement de iperf et d-itg et ecrire les flows dans un fichier
 

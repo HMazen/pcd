@@ -33,8 +33,8 @@ class Master(object):
 
         if result_check == True:
             for sender in self.current_senders:
-                # result = sender.start_compaign()
-                pass
+                result = sender.start_compaign()
+                print result
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
@@ -47,7 +47,7 @@ class Master(object):
         for sender in senders:
             try:
                 s = Pyro4.Proxy('PYRONAME:' + sender + '_sender')
-                if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender), "192.168.1.5"):
+                if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender), "127.0.0.1"):
                     unreach_senders.append(sender)
                 else:
                     self.current_senders.append(s)

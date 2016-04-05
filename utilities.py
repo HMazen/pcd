@@ -5,8 +5,8 @@ class flow_config(object):
 
     def __init__(self):
         self.flow_id = 123456
-        self.source = '192.168.1.5'  # source node address
-        self.destination = '192.168.1.5'  # destination node address
+        self.source = '127.0.0.1'  # source node address
+        self.destination = '127.0.0.1'  # destination node address
         self.protocol = 'tcp'  # protocol type
         self.ps = 1500  # packet size in bytes
         self.ps_distro = ''  # packet size distribution
