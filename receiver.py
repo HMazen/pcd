@@ -3,12 +3,19 @@ import sys
 import time
 from subprocess import Popen, PIPE, check_output
 
+from utilities import *
+
 
 def job(command):
     try:
-        out = Popen(command, stdout=PIPE, stderr=PIPE)
-        (stdout, stderr) = out.communicate()
-    except:
+        p = Popen(command, stdout=PIPE, stderr=PIPE)
+        out = p.stdout.readline()
+        while out:
+            print out
+            out = p.stdout.readline()
+    except Exception as e:
+        print str(e)
+
         sys.exit(3)
 
 
@@ -29,7 +36,7 @@ class Receiver(object):
 
     def check_requirments(self):
         try:
-            command = ["iperf3", "-s", "--logfile", "log"]
+            command = ["iperf3", "-s", '-V', "--logfile", "log"]
             if not self.proc:
                 self.proc = multiprocessing.Process(target=job, args=(command,))
                 self.proc.start()
@@ -55,3 +62,9 @@ class Receiver(object):
                 Popen(('kill', server_pid), stdout=PIPE)
                 ps.wait()
             self.proc = None
+
+    def get_result(self):
+        with open("log") as f: s = f.read()
+        m = metric()
+        r = result()
+        return s

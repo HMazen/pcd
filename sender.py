@@ -1,5 +1,6 @@
 from subprocess import *
 
+import Pyro4
 from Pyro4.util import SerializerBase
 
 from utilities import *
@@ -60,8 +61,9 @@ class Sender(object):
                 command = ["iperf3", "-c", flow.destination, "-n", "500"]
                 out = Popen(command, stdout=PIPE, stderr=PIPE)
                 (stdout, stderr) = out.communicate()
-                print stdout
-
+                r = Pyro4.Proxy('PYRONAME:' + flow.destination + '_receiver')
+                result = r.get_result()
+                print result
                 # TODO: verifier le fonctionnement de iperf et d-itg et ecrire les flows dans un fichier
 
     def check_requirments(self):
@@ -76,3 +78,6 @@ class Sender(object):
             return True
         except:
             return False
+
+    def print_result(self, r):
+        print r

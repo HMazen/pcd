@@ -35,6 +35,7 @@ class Master(object):
             for sender in self.current_senders:
                 result = sender.start_compaign()
                 print result
+                pass
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
