@@ -1,3 +1,12 @@
+def enum(**enums):
+    return type('Enum', (), enums)
+
+
+Metrics = enum(jitter='jitter', packet_loss='packet loss', bit_rate='bit rate', delay='delay')
+
+Protocols = enum(tcp='TCP', udp='UDP')
+
+
 
 class flow_config(object):
     ''' This  class holds the definition
@@ -61,6 +70,7 @@ class metric(object):
         self.min = min  # min value mesured
         self.max = max  # max value mesured
         self.average = average  # verage value mesured
+        self.values = {}
 
 
 class result(object):
