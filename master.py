@@ -1,56 +1,6 @@
 import Pyro4
-from Pyro4.util import SerializerBase
 
-from utilities import *
-
-
-def flow_config_class_to_dict(obj):
-    return dict(__class__="flow_config", flow_id=obj.flow_id, source=obj.source, destination=obj.destination,
-                protocol=obj.protocol, ps=obj.ps, ps_distro=obj.ps_distro, idt=obj.idt, idt_distro=obj.idt_distro,
-                starting_date=obj.starting_date, trans_duration=obj.trans_duration,
-                mesure=obj.mesure)
-
-
-def flow_config_dict_to_class(classname, d):
-    f = flow_config()
-    f.flow_id = d["flow_id"]
-    f.source = d["source"]
-    f.destination = d["destination"]
-    f.idt = d["idt"]
-    f.idt_distro = d["idt_distro"]
-    f.ps = d["ps"]
-    f.ps_distro = d["ps_distro"]
-    f.protocol = d["protocol"]
-    f.starting_date = d["starting_date"]
-    f.trans_duration = d["trans_duration"]
-    f.mesure = d["mesure"]
-    m = mesure_config()
-    m.metrics = d["mesure"]["metrics"]
-    m.sampling_interval = d["mesure"]["sampling_interval"]
-    m.finish_date = d["mesure"]["finish_date"]
-    m.start_date = d["mesure"]["start_date"]
-    f.mesure = m
-    return f
-
-
-def mesure_config_class_to_dict(obj):
-    return dict(__class__="mesure_config", metrics=obj.metrics, start_date=obj.start_date, finish_date=obj.finish_date,
-                sampling_interval=obj.sampling_interval)
-
-
-def mesure_config_dict_to_class(classname, d):
-    m = mesure_config()
-    m.metrics = d["metrics"]
-    m.sampling_interval = d["sampling_interval"]
-    m.finish_date = d["finish_date"]
-    m.start_date = d["start_date"]
-    return m
-
-SerializerBase.register_class_to_dict(flow_config, flow_config_class_to_dict)
-SerializerBase.register_dict_to_class("flow_config", flow_config_dict_to_class)
-
-SerializerBase.register_class_to_dict(mesure_config, mesure_config_class_to_dict)
-SerializerBase.register_dict_to_class("mesure_config", mesure_config_dict_to_class)
+from serialization import *
 
 
 class Master(object):
@@ -65,11 +15,10 @@ class Master(object):
         if self.has_pending_compaigns(): return
         self.pending_compaigns.append(config)
         result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
-
         if result_check == True:
             for sender in self.current_senders:
                 result = sender.start_compaign()
-                print result
+                print result.flow_id
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
@@ -149,11 +98,26 @@ def main():
 if __name__ == '__main__':
     master = Master()
     f = flow_config()
-    f.idt = "fsf"
     f.protocol = Protocols.tcp
+    f.idt_distro = Idt_disto.constant
+    f.idt.append(1500)
+    f.ps.append(512)
+    f.ps_distro = Ps_distro.constant
     m = mesure_config()
     m.sampling_interval = 1
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
+
+    '''f1 = flow_config()
+    f1.protocol = Protocols.udp
+    f1.idt_distro = Idt_disto.constant
+    f1.idt.append(1200)
+    f1.ps.append(488)
+    f1.ps_distro = Ps_distro.constant
+    m1 = mesure_config()
+    m1.sampling_interval = 1
+    m1.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
+    f1.mesure = m1'''
+
     config = compaign_config([f])
     master.post_compaign_config(config)

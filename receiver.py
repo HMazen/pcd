@@ -3,36 +3,12 @@ import sys
 import time
 from subprocess import Popen, PIPE, check_output
 
-from Pyro4.util import SerializerBase
-
-from utilities import *
-
-
-def mesure_config_class_to_dict(obj):
-    return dict(__class__="mesure_config", metrics=obj.metrics, start_date=obj.start_date, finish_date=obj.finish_date,
-                sampling_interval=obj.sampling_interval)
-
-
-def mesure_config_dict_to_class(classname, d):
-    m = mesure_config()
-    m.metrics = d["metrics"]
-    m.sampling_interval = d["sampling_interval"]
-    m.finish_date = d["finish_date"]
-    m.start_date = d["start_date"]
-    return m
-
-
-SerializerBase.register_class_to_dict(mesure_config, mesure_config_class_to_dict)
-SerializerBase.register_dict_to_class("mesure_config", mesure_config_dict_to_class)
+from serialization import *
 
 
 def job(command):
     try:
-        p = Popen(command, stdout=PIPE, stderr=PIPE)
-        out = p.stdout.readline()
-        while out:
-            print out
-            out = p.stdout.readline()
+        p = Popen(command, stdout=PIPE, stderr=PIPE).communicate()
     except Exception as e:
         print str(e)
 
@@ -69,8 +45,7 @@ class Receiver(object):
             else:
                 return "server is already running"
         except Exception as e:
-            print str(e)
-            return str(e)
+            print "receiver check_requirments ", str(e)
 
     def terminate_proc(self):
         if self.proc:
@@ -87,10 +62,29 @@ class Receiver(object):
     def get_result(self, mesure):
         try:
             self.terminate_proc()
-            print mesure.metrics
-            '''ps = Popen(('ITGDec', 'logfile', '-c', str(mesure.sampling_interval*1000), 'result'), stdout=PIPE).communicate()
-            with open("result") as f : s = f.read()
+            ps = Popen(['ITGDec', 'logfile', '-c', str(mesure.sampling_interval * 1000), 'result'],
+                       stdout=PIPE).communicate()
+            bitrate = metric()
+            bitrate.name = Metrics.bit_rate
+            delay = metric()
+            delay.name = Metrics.delay
+            jitter = metric()
+            jitter.name = Metrics.jitter
+            packet_loss = metric()
+            packet_loss.name = Metrics.packet_loss
+            with open("result") as f:
+                for s in f.readlines():
+                    metrics = s.split()
+                    bitrate.values[float(metrics[0])] = float(metrics[1])
+                    delay.values[float(metrics[0])] = float(metrics[2])
+                    jitter.values[float(metrics[0])] = float(metrics[3])
+                    packet_loss.values[float(metrics[0])] = float(metrics[4])
+            r = result()
+            r.metrics.extend([bitrate, delay, jitter, packet_loss])
 
-            return s'''
+            return r
         except Exception as e:
-            print str(e)
+            print "receiver get_result: ", str(e)
+
+
+            # bitrate delay jitter packet loss

@@ -6,6 +6,11 @@ Metrics = enum(jitter='jitter', packet_loss='packet loss', bit_rate='bit rate', 
 
 Protocols = enum(tcp='TCP', udp='UDP')
 
+Ps_distro = enum(constant='-c', uniform='-u', exponential='-e', normal='-n',
+                 poisson='-o', pareto='-v', cauchy='-y', gamma='-g', weibull='-w')
+Idt_disto = enum(constant='-C', uniform='-U', exponential='-E', normal='-N',
+                 poisson='-O', pareto='-V', cauchy='-Y', gamma='-G', weibull='-W')
+
 
 
 class flow_config(object):
@@ -16,13 +21,13 @@ class flow_config(object):
         self.flow_id = 123456
         self.source = '127.0.0.1'  # source node address
         self.destination = '127.0.0.1'  # destination node address
-        self.protocol = 'tcp'  # protocol type
-        self.ps = 1500  # packet size in bytes
+        self.protocol = 'TCP'  # protocol type
+        self.ps = []  # packet size in bytes
         self.ps_distro = ''  # packet size distribution
-        self.idt = 0  # inter departure time
+        self.idt = []  # inter departure time
         self.idt_distro = ''  # inter departure time distribution
         self.starting_date = 0  # transmission start date
-        self.trans_duration = 60  # transmission duration
+        self.trans_duration = 5  # transmission duration
         self.mesure = None
 
 
@@ -64,12 +69,8 @@ class mesure_config(object):
 class metric(object):
     ''' Definition of a metric, eg: bandwidth, jitter... '''
 
-    def __init__(self, name='', flow_id='', min=0, max=100, average=50):
-        self.flow_id = ''  # flow id
+    def __init__(self, name=''):
         self.name = name  # metric name
-        self.min = min  # min value mesured
-        self.max = max  # max value mesured
-        self.average = average  # verage value mesured
         self.values = {}
 
 
