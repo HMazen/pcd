@@ -10,51 +10,52 @@ class Master(object):
         self.results = []
         self.current_senders = []
         self.current_receivers = []
+        self.unreach_senders = []
+        self.unreach_receivers = []
 
     def post_compaign_config(self, config):
-        if self.has_pending_compaigns(): return
+        if self.has_pending_compaigns():
+            return
         self.pending_compaigns.append(config)
         result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
-        if result_check == True:
+        if result_check:
             for sender in self.current_senders:
                 result = sender.start_compaign()
                 print result.flow_id
+                self.pending_compaigns.remove(config)
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
     def check_hosts_availability(self, senders, receivers):
         ''' Internal method to check hosts
 			for remote objects '''
-        unreach_senders = []
-        unreach_receivers = []
-
         for sender in senders:
             try:
                 s = Pyro4.Proxy('PYRO:' + sender + '_sender@' + sender + ':45000')
                 if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender), "127.0.0.1"):
-                    unreach_senders.append(sender)
+                    self.unreach_senders.append(sender)
                 else:
                     self.current_senders.append(s)
             except Exception as e:
-                print  "check senders " + str(e.message)
-                unreach_senders.append(sender)
+                print "check senders " + str(e.message)
+                self.uself.nreach_senders.append(sender)
 
         for recv in receivers:
             try:
                 r = Pyro4.Proxy('PYRO:' + recv + '_receiver@' + recv + ':45000')
                 result_check = r.check_requirments()
                 if not result_check:
-                    unreach_receivers.append(recv)
+                    self.unreach_receivers.append(recv)
                 elif result_check == 'server is already running':
                     print result_check
                 # TODO: traiter le cas de "server is running"
                 else:
                     self.current_receivers.append(r)
             except:
-                unreach_receivers.append(recv)
+                self.unreach_receivers.append(recv)
         print self.current_receivers
         print self.current_senders
-        if not unreach_senders and not unreach_receivers:
+        if not self.unreach_senders and not self.unreach_receivers:
             return True
         else:
             return False
