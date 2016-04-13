@@ -53,7 +53,8 @@ def main():
             r_obj: recv_name
         },
         ns=False,
-        port=45000
+        port=45000,
+        host=config_dict["IP"]
     )
 
 

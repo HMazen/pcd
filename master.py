@@ -22,6 +22,7 @@ class Master(object):
             for sender in self.current_senders:
                 result = sender.start_compaign()
                 print result.flow_id
+                print result.metrics[0].values
                 self.pending_compaigns.remove(config)
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
@@ -38,7 +39,7 @@ class Master(object):
                     self.current_senders.append(s)
             except Exception as e:
                 print "check senders " + str(e.message)
-                self.uself.nreach_senders.append(sender)
+                self.unreach_senders.append(sender)
 
         for recv in receivers:
             try:
@@ -108,6 +109,8 @@ if __name__ == '__main__':
     m.sampling_interval = 1
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
+    f.source = "192.168.56.1"
+    f.destination = "192.168.56.101"
 
     '''f1 = flow_config()
     f1.protocol = Protocols.udp
