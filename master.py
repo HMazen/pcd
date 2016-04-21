@@ -8,7 +8,8 @@ from serialization import *
 def job(obj, liste):
     try:
         result = obj.start_compaign()
-        liste.append(result.metrics[0].values)
+        for r in result:
+            liste.append(r.metrics[0].values)
     except Exception as e:
         print "jobs ", str(e)
 

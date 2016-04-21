@@ -12,6 +12,8 @@ class Sender(object):
         self.num_flows = 0
         self.current_flows = None
         self.current_mesures = None
+        self.current_results = []
+
 
     def setup_compaign(self, flows, master_ip):
         # setup the communication with the master
@@ -55,18 +57,20 @@ class Sender(object):
 
     def start_compaign(self):
         try:
+            f = open("script", "a+")
             for flow in self.current_flows:
-                if self.check_requirments():
-                    with open("script", "a+") as f:
-                        f.write(self.get_command_itg_send(flow))
-                        f.write('\n')
-                        f.close()
+                f.write(self.get_command_itg_send(flow))
+                f.write('\n')
+            f.close()
             command = ["ITGSend", "script", "-x", "logfile"]
             out = Popen(command, stdout=PIPE, stderr=PIPE)
             (stdout, stderr) = out.communicate()
-            r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
-            result = r.get_result(flow)
-            return result
+            # os.remove("script")
+            for flow in self.current_flows:
+                r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
+                result = r.get_result(flow)
+                self.current_results.append(result)
+            return self.current_results
         except Exception as e:
             print "start_compaign: ", str(e)
 
