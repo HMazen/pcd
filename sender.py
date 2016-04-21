@@ -57,7 +57,7 @@ class Sender(object):
         try:
             for flow in self.current_flows:
                 if self.check_requirments():
-                    with open("script", "w+") as f:
+                    with open("script", "a+") as f:
                         f.write(self.get_command_itg_send(flow))
                         f.write('\n')
                         f.close()
@@ -65,9 +65,7 @@ class Sender(object):
             out = Popen(command, stdout=PIPE, stderr=PIPE)
             (stdout, stderr) = out.communicate()
             r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
-            result = r.get_result(flow.mesure)
-            result.flow_id = flow.flow_id
-            print result.flow_id
+            result = r.get_result(flow)
             return result
         except Exception as e:
             print "start_compaign: ", str(e)

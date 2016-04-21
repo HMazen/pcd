@@ -33,7 +33,6 @@ class flow_config(object):
 
 class compaign_config(object):
     ''' Holds the list of flows defining the compaign '''
-
     def __init__(self, flows):
         self.flows = flows
 
@@ -43,13 +42,15 @@ class compaign_config(object):
     def get_senders(self):
         s = []
         for flow in self.flows:
-            s.append(flow.source)
+            if not s.count(flow.source):
+                s.append(flow.source)
         return s
 
     def get_receivers(self):
         r = []
         for flow in self.flows:
-            r.append(flow.destination)
+            if not r.count(flow.destination):
+                r.append(flow.destination)
         return r
 
     def get_flows_by_sender(self, sender):
@@ -58,7 +59,6 @@ class compaign_config(object):
 
 class mesure_config(object):
     ''' Definition of a mesure configuration '''
-
     def __init__(self):
         self.metrics = []  # list of metrics
         self.start_date = ''  # estimated starting date
@@ -68,7 +68,6 @@ class mesure_config(object):
 
 class metric(object):
     ''' Definition of a metric, eg: bandwidth, jitter... '''
-
     def __init__(self, name=''):
         self.name = name  # metric name
         self.values = {}

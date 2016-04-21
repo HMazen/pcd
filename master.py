@@ -1,31 +1,55 @@
+import multiprocessing
+
 import Pyro4
 
 from serialization import *
 
 
+def job(obj, liste):
+    try:
+        result = obj.start_compaign()
+        liste.append(result.metrics[0].values)
+    except Exception as e:
+        print "jobs ", str(e)
+
+
+# manager = multiprocessing.Manager()
+# results = manager.list()
+
 class Master(object):
     def __init__(self):
         self.pending_compaigns = []
         self.pending_flow_results = []
-        self.results = []
+        self.current_processes = []
         self.current_senders = []
         self.current_receivers = []
         self.unreach_senders = []
         self.unreach_receivers = []
+        self.results = []
 
     def post_compaign_config(self, config):
         if self.has_pending_compaigns():
             return
+
         self.pending_compaigns.append(config)
         result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
         if result_check:
+            manager = multiprocessing.Manager()
+            self.results = manager.list()
             for sender in self.current_senders:
-                result = sender.start_compaign()
-                print result.flow_id
-                print result.metrics[0].values
-                self.pending_compaigns.remove(config)
+                proc = multiprocessing.Process(target=job, args=(sender, self.results))
+                proc.start()
+                self.current_processes.append(proc)
+            for proc in self.current_processes:
+                proc.join()
+            print self.results
+            self.pending_compaigns.remove(config)
                 # TODO: creer un processus pour chaque sender
                 # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
+
+
+            #TODO: select only one sender
+
 
     def check_hosts_availability(self, senders, receivers):
         ''' Internal method to check hosts
@@ -33,6 +57,7 @@ class Master(object):
         for sender in senders:
             try:
                 s = Pyro4.Proxy('PYRO:' + sender + '_sender@' + sender + ':45000')
+                print self.pending_compaigns[0].get_flows_by_sender(sender)
                 if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender), "127.0.0.1"):
                     self.unreach_senders.append(sender)
                 else:
@@ -110,9 +135,10 @@ if __name__ == '__main__':
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
     f.source = "192.168.56.1"
-    f.destination = "192.168.56.101"
+    f.destination = "192.168.56.1"
 
-    '''f1 = flow_config()
+    f1 = flow_config()
+    f1.flow_id = 123
     f1.protocol = Protocols.udp
     f1.idt_distro = Idt_disto.constant
     f1.idt.append(1200)
@@ -121,7 +147,9 @@ if __name__ == '__main__':
     m1 = mesure_config()
     m1.sampling_interval = 1
     m1.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
-    f1.mesure = m1'''
+    f1.mesure = m1
+    f1.source = "192.168.56.1"
+    f1.destination = "192.168.56.1"
 
-    config = compaign_config([f])
+    config = compaign_config([f, f1])
     master.post_compaign_config(config)

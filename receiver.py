@@ -43,7 +43,7 @@ class Receiver(object):
                 else:
                     return False
             else:
-                return "server is already running"
+                return True
         except Exception as e:
             print "receiver check_requirments ", str(e)
 
@@ -59,10 +59,11 @@ class Receiver(object):
                 ps.wait()
             self.proc = None
 
-    def get_result(self, mesure):
+    def get_result(self, flow):
         try:
             self.terminate_proc()
-            ps = Popen(['ITGDec', 'logfile', '-c', str(mesure.sampling_interval * 1000), 'result'],
+            mesure = flow.mesure
+            ps = Popen(['ITGDec', 'logfile', '-c', str(mesure.sampling_interval * 1000), 'result' + str(flow.flow_id)],
                        stdout=PIPE).communicate()
             bitrate = metric()
             bitrate.name = Metrics.bit_rate
@@ -72,7 +73,7 @@ class Receiver(object):
             jitter.name = Metrics.jitter
             packet_loss = metric()
             packet_loss.name = Metrics.packet_loss
-            with open("result") as f:
+            with open("result" + str(flow.flow_id)) as f:
                 for s in f.readlines():
                     metrics = s.split()
                     bitrate.values[float(metrics[0])] = float(metrics[1])
@@ -81,10 +82,7 @@ class Receiver(object):
                     packet_loss.values[float(metrics[0])] = float(metrics[4])
             r = result()
             r.metrics.extend([bitrate, delay, jitter, packet_loss])
-
+            r.flow_id = flow.flow_id
             return r
         except Exception as e:
             print "receiver get_result: ", str(e)
-
-
-            # bitrate delay jitter packet loss
