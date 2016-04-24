@@ -46,7 +46,8 @@ def main():
     print 'receiver name: ' + recv_name
     s_obj = Sender()
     r_obj = Receiver()
-    r_obj.ip_adress = config_dict['IP']
+    s_obj.ip_address = config_dict['IP']
+    r_obj.ip_address = config_dict['IP']
     Pyro4.Daemon.serveSimple(
         {
             s_obj: sender_name,

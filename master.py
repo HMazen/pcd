@@ -9,6 +9,7 @@ def job(obj, liste):
     try:
         result = obj.start_compaign()
         for r in result:
+            liste.append(r.flow_id)
             liste.append(r.metrics[0].values)
     except Exception as e:
         print "jobs ", str(e)
@@ -31,7 +32,6 @@ class Master(object):
     def post_compaign_config(self, config):
         if self.has_pending_compaigns():
             return
-
         self.pending_compaigns.append(config)
         result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
         if result_check:
@@ -43,23 +43,21 @@ class Master(object):
                 self.current_processes.append(proc)
             for proc in self.current_processes:
                 proc.join()
+            for r in self.current_receivers:
+                r.terminate_proc()
             print self.results
-            self.pending_compaigns.remove(config)
-                # TODO: creer un processus pour chaque sender
-                # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
-
-
-            #TODO: select only one sender
-
+        self.pending_compaigns.remove(config)
+        # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
     def check_hosts_availability(self, senders, receivers):
         ''' Internal method to check hosts
-			for remote objects '''
+        for remote objects '''
+
         for sender in senders:
             try:
                 s = Pyro4.Proxy('PYRO:' + sender + '_sender@' + sender + ':45000')
                 print self.pending_compaigns[0].get_flows_by_sender(sender)
-                if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender), "127.0.0.1"):
+                if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender)):
                     self.unreach_senders.append(sender)
                 else:
                     self.current_senders.append(s)
@@ -135,7 +133,7 @@ if __name__ == '__main__':
     m.sampling_interval = 1
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
-    f.source = "192.168.56.1"
+    f.source = "192.168.56.101"
     f.destination = "192.168.56.1"
 
     f1 = flow_config()
@@ -149,7 +147,7 @@ if __name__ == '__main__':
     m1.sampling_interval = 1
     m1.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f1.mesure = m1
-    f1.source = "192.168.56.1"
+    f1.source = "192.168.56.102"
     f1.destination = "192.168.56.1"
 
     config = compaign_config([f, f1])

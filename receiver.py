@@ -1,4 +1,5 @@
 import multiprocessing
+import os
 import sys
 import time
 from subprocess import Popen, PIPE, check_output
@@ -11,13 +12,12 @@ def job(command):
         p = Popen(command, stdout=PIPE, stderr=PIPE).communicate()
     except Exception as e:
         print str(e)
-
         sys.exit(3)
 
 
 class Receiver(object):
     def __init__(self):
-        self.ip_adress = ''
+        self.ip_address = ''
         self.sender_ip = ''
         self.remote_sender = None
         self.result = None
@@ -33,7 +33,7 @@ class Receiver(object):
 
     def check_requirments(self):
         try:
-            command = ["ITGRecv", "-a", self.ip_adress]
+            command = ["ITGRecv", "-a", self.ip_address]
             if not self.proc:
                 self.proc = multiprocessing.Process(target=job, args=(command,))
                 self.proc.start()
@@ -61,10 +61,9 @@ class Receiver(object):
 
     def get_result(self, flow):
         try:
-            self.terminate_proc()
             mesure = flow.mesure
-            ps = Popen(['ITGDec', 'logfile', '-c', str(mesure.sampling_interval * 1000), 'result' + str(flow.flow_id)],
-                       stdout=PIPE).communicate()
+            ps = Popen(['ITGDec', 'logfile' + str(flow.source), '-c', str(mesure.sampling_interval * 1000),
+                        'result' + str(flow.flow_id)], stdout=PIPE).communicate()
             bitrate = metric()
             bitrate.name = Metrics.bit_rate
             delay = metric()
@@ -83,6 +82,8 @@ class Receiver(object):
             r = result()
             r.metrics.extend([bitrate, delay, jitter, packet_loss])
             r.flow_id = flow.flow_id
+            os.remove("logfile" + str(flow.source))
+            os.remove("result" + str(flow.flow_id))
             return r
         except Exception as e:
             print "receiver get_result: ", str(e)
