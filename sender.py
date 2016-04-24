@@ -1,4 +1,3 @@
-import os
 from subprocess import *
 
 import Pyro4
@@ -37,6 +36,7 @@ class Sender(object):
 
     def start_compaign(self):
         try:
+            del self.current_results[:]
             f = open("script", "a+")
             for flow in self.current_flows:
                 f.write(Sender.get_command_itg_send(flow))

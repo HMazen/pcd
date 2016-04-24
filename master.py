@@ -8,6 +8,7 @@ from serialization import *
 def job(obj, liste):
     try:
         result = obj.start_compaign()
+        print result
         for r in result:
             liste.append(r.flow_id)
             liste.append(r.metrics[0].values)
@@ -47,6 +48,9 @@ class Master(object):
                 r.terminate_proc()
             print self.results
         self.pending_compaigns.remove(config)
+        del self.current_receivers[:]
+        del self.current_senders[:]
+        del self.current_processes[:]
         # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
     def check_hosts_availability(self, senders, receivers):
@@ -133,8 +137,8 @@ if __name__ == '__main__':
     m.sampling_interval = 1
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
-    f.source = "192.168.56.101"
-    f.destination = "192.168.56.1"
+    f.source = "192.168.56.1"
+    f.destination = "192.168.56.101"
 
     f1 = flow_config()
     f1.flow_id = 123
@@ -147,8 +151,8 @@ if __name__ == '__main__':
     m1.sampling_interval = 1
     m1.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f1.mesure = m1
-    f1.source = "192.168.56.102"
-    f1.destination = "192.168.56.1"
+    f1.source = "192.168.56.101"
+    f1.destination = "192.168.56.102"
 
     config = compaign_config([f, f1])
     master.post_compaign_config(config)
