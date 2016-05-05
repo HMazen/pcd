@@ -48,6 +48,7 @@ def main():
     r_obj = Receiver()
     s_obj.ip_address = config_dict['IP']
     r_obj.ip_address = config_dict['IP']
+    r_obj.multicast_address = config_dict['multicast']
     Pyro4.Daemon.serveSimple(
         {
             s_obj: sender_name,

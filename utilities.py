@@ -35,6 +35,7 @@ class compaign_config(object):
     ''' Holds the list of flows defining the compaign '''
     def __init__(self, flows):
         self.flows = flows
+        self.is_multicast = False
 
     def add_flow(self, flow):
         self.flows.append(flow)

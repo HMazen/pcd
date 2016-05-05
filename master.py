@@ -15,13 +15,9 @@ def job(obj, liste):
     except Exception as e:
         print "jobs ", str(e)
 
-
-# manager = multiprocessing.Manager()
-# results = manager.list()
-
 class Master(object):
     def __init__(self):
-        self.pending_compaigns = []
+        self.pending_compaign = None
         self.pending_flow_results = []
         self.current_processes = []
         self.current_senders = []
@@ -31,13 +27,13 @@ class Master(object):
         self.results = []
 
     def post_compaign_config(self, config):
-        if self.has_pending_compaigns():
+        if self.pending_compaign:
             return
-        self.pending_compaigns.append(config)
-        result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers())
+        self.pending_compaigns = config
+        result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers(),
+                                                     self.pending_compaigns.is_multicast)
         if result_check:
-            manager = multiprocessing.Manager()
-            self.results = manager.list()
+            self.results = multiprocessing.Manager().list()
             for sender in self.current_senders:
                 proc = multiprocessing.Process(target=job, args=(sender, self.results))
                 proc.start()
@@ -47,21 +43,19 @@ class Master(object):
             for r in self.current_receivers:
                 r.terminate_proc()
             print self.results
-        self.pending_compaigns.remove(config)
+        self.pending_compaigns = None
         del self.current_receivers[:]
         del self.current_senders[:]
         del self.current_processes[:]
         # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
-    def check_hosts_availability(self, senders, receivers):
+    def check_hosts_availability(self, senders, receivers, is_multicast):
         ''' Internal method to check hosts
         for remote objects '''
-
         for sender in senders:
             try:
                 s = Pyro4.Proxy('PYRO:' + sender + '_sender@' + sender + ':45000')
-                print self.pending_compaigns[0].get_flows_by_sender(sender)
-                if not s.setup_compaign(self.pending_compaigns[0].get_flows_by_sender(sender)):
+                if not s.setup_compaign(self.pending_compaigns.get_flows_by_sender(sender), is_multicast):
                     self.unreach_senders.append(sender)
                 else:
                     self.current_senders.append(s)
@@ -72,7 +66,7 @@ class Master(object):
         for recv in receivers:
             try:
                 r = Pyro4.Proxy('PYRO:' + recv + '_receiver@' + recv + ':45000')
-                result_check = r.check_requirments()
+                result_check = r.check_requirments(is_multicast)
                 if not result_check:
                     self.unreach_receivers.append(recv)
                 elif result_check == 'server is already running':
@@ -92,22 +86,14 @@ class Master(object):
             # process check results
             # TODO : traiter le cas ou il y a des senders ou receivers inaccessibes
 
-    def has_pending_compaigns(self):
-        return len(self.pending_compaigns)
-
     def post_result(self, result):
         ''' A sender uses this method to deposit a result '''
-
         if result.flow_id in self.pending_flow_results:
             self.pending_flow_results.remove(result.flow_id)
             self.results.append(result)
 
     def basic_ping(self):
         return 'master working'  # test purpose only
-
-    def call_sender(self, sender_ip):
-        s = Pyro4.Proxy('PYRONAME:' + sender_ip + '_sender')
-        s.basic_ping()
 
 
 def main():
@@ -138,7 +124,8 @@ if __name__ == '__main__':
     m.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
     f.mesure = m
     f.source = "192.168.56.1"
-    f.destination = "192.168.56.101"
+    f.destination = "192.168.56.1"
+
 
     f1 = flow_config()
     f1.flow_id = 123
@@ -154,5 +141,6 @@ if __name__ == '__main__':
     f1.source = "192.168.56.101"
     f1.destination = "192.168.56.102"
 
-    config = compaign_config([f, f1])
+    config = compaign_config([f])
+    config.is_multicast = True
     master.post_compaign_config(config)

@@ -1,4 +1,3 @@
-import os
 from subprocess import *
 
 import Pyro4
@@ -11,12 +10,14 @@ class Sender(object):
         self.ip_address = ''
         self.current_flows = None
         self.current_results = []
+        self.is_multicast = False
 
-    def setup_compaign(self, flows):
+    def setup_compaign(self, flows, is_multicast):
         # check traffic generation requirements
         result_check = Sender.check_requirements()
         if not result_check:
             return result_check
+        self.is_multicast = is_multicast
         self.current_flows = flows
         return True
 
@@ -35,9 +36,8 @@ class Sender(object):
         s.strip()
         return s
 
-    def start_compaign(self):
+    def start_compaign_unicast(self):
         try:
-            del self.current_results[:]
             f = open("script", "a+")
             for flow in self.current_flows:
                 f.write(Sender.get_command_itg_send(flow))
@@ -49,16 +49,43 @@ class Sender(object):
             os.remove("script")
             for flow in self.current_flows:
                 r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
-                result = r.get_result(flow)
+                result = r.get_result_unicast(flow)
+                self.current_results.append(result)
+            return self.current_results
+
+        except Exception as e:
+            print "start_compaign: ", str(e)
+
+    def start_compaign_multicast(self):
+        try:
+            if len(self.current_flows) != 1:
+                return "only one flow is allowed in multicast mode"
+            command = ["iperf", "-c", self.current_flows[0].destination, "-u", "-t",
+                       str(self.current_flows[0].trans_duration)]
+            out = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = out.communicate()
+            for flow in self.current_flows:
+                r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
+                result = r.get_result_multicast(flow)
                 self.current_results.append(result)
             return self.current_results
         except Exception as e:
-            print "start_compaign: ", str(e)
+            print "start_compaign multicast: ", str(e)
+
+    def start_compaign(self):
+        try:
+            del self.current_results[:]
+            if not self.is_multicast:
+                return self.start_compaign_unicast()
+            else:
+                return self.start_compaign_multicast()
+        except Exception as e:
+            print str(e)
 
     @staticmethod
     def check_requirements():
         try:
-            command = ["iperf3", "-v"]
+            command = ["iperf", "-v"]
             out = Popen(command, stdout=PIPE, stderr=PIPE)
             (stdout, stderr) = out.communicate()
             command = ["ITGSend", "-h"]

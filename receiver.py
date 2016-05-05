@@ -9,7 +9,8 @@ from serialization import *
 
 def job(command):
     try:
-        p = Popen(command, stdout=PIPE, stderr=PIPE).communicate()
+        p = Popen(command, stdout=PIPE, stderr=PIPE)
+        p.communicate()
     except Exception as e:
         print str(e)
         sys.exit(3)
@@ -18,22 +19,24 @@ def job(command):
 class Receiver(object):
     def __init__(self):
         self.ip_address = ''
+        self.multicast_address = ''
         self.sender_ip = ''
         self.remote_sender = None
         self.result = None
         self.proc = None
-
-    def setup_rcv(self, source_ip):
-        self.sender_ip = source_ip
-        status = self.check_requirments()
-        return status
+        self.is_multicast = False
 
     def basic_ping(self):
         print 'receiver working'  # test purpose only
 
-    def check_requirments(self):
+    def check_requirments(self, is_multicast):
+        self.terminate_proc()
         try:
-            command = ["ITGRecv", "-a", self.ip_address]
+            if is_multicast:
+                self.is_multicast = True
+                command = ["iperf", "-s", "-B", self.multicast_address, "-u"]
+            else:
+                command = ["ITGRecv", "-a", self.ip_address]
             if not self.proc:
                 self.proc = multiprocessing.Process(target=job, args=(command,))
                 self.proc.start()
@@ -48,8 +51,12 @@ class Receiver(object):
             print "receiver check_requirments ", str(e)
 
     def terminate_proc(self):
-        if self.proc:
-            self.proc.terminate()
+        try:
+            if self.proc:
+                self.proc.terminate()
+        except:
+            pass
+        try:
             ps = Popen(('ps', '-ef'), stdout=PIPE)
             output = check_output(('grep', '[I]TGRecv'), stdin=ps.stdout)
             ps.wait()
@@ -57,9 +64,19 @@ class Receiver(object):
             if server_pid:
                 Popen(('kill', server_pid), stdout=PIPE)
                 ps.wait()
-            self.proc = None
+        except:
+            try:
+                ps = Popen(('ps', '-ef'), stdout=PIPE)
+                output = check_output(('grep', '[i]perf'), stdin=ps.stdout)
+                ps.wait()
+                server_pid = output.split()[1]
+                if server_pid:
+                    Popen(('kill', server_pid), stdout=PIPE)
+                    ps.wait()
+            except:
+                pass
 
-    def get_result(self, flow):
+    def get_result_unicast(self, flow):
         try:
             mesure = flow.mesure
             ps = Popen(['ITGDec', 'logfile' + str(flow.source), '-c', str(mesure.sampling_interval * 1000),
@@ -84,6 +101,14 @@ class Receiver(object):
             r.flow_id = flow.flow_id
             os.remove("logfile" + str(flow.source))
             os.remove("result" + str(flow.flow_id))
+            self.is_multicast = False
             return r
+        except Exception as e:
+            print "receiver get_result: ", str(e)
+
+    def get_result_multicast(self, flow):
+        try:
+            self.is_multicast = False
+            print "multicast with success"
         except Exception as e:
             print "receiver get_result: ", str(e)
