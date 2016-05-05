@@ -1,62 +1,97 @@
+from subprocess import *
+
 import Pyro4
 
+
 class Sender(object):
+    def __init__(self):
+        self.results = []
+        self.master_ip = ''
+        self.ip_address = ''
+        self.current_flows = None
+        self.current_results = []
+        self.is_multicast = False
 
-	def __init__(self):
-		self.results = []
-		self.master_ip = ''
-		self.remote_receiver = None
-		self.remote_master = None
-		self.num_flows = 0
+    def setup_compaign(self, flows, is_multicast):
+        # check traffic generation requirements
+        result_check = Sender.check_requirements()
+        if not result_check:
+            return result_check
+        self.is_multicast = is_multicast
+        self.current_flows = flows
+        return True
 
-	def setup_compaign(self, flow_config, master_ip):
-		''' invoked by master to setup the compaign'''
+    def basic_ping(self):
+        print 'sender working'  # test purpose only
 
-		# setup the communication with the master
-		if not self.master_ip:
-			self.master_ip = master_ip
-		if not self.remote_master:
-			try:
-				self.remote_master = get_remote_master()
-			except e:
-				pass
-				# TODO: hansle exception
+    @staticmethod
+    def get_command_itg_send(flow):
+        s = "-a " + flow.destination + " -T " + flow.protocol + " -t " + \
+            str(flow.trans_duration * 1000) + " " + flow.idt_distro + " "
+        for i in flow.idt:
+            s += str(i) + " "
+        s += flow.ps_distro + " "
+        for i in flow.idt:
+            s += str(i) + " "
+        s.strip()
+        return s
 
-		# check traffic generation requirments
-		test = check_requirments()
-		if not test:
-			pass
-			# TODO: handle failure test
-		
-		# setup communication with receiver
-		if not self.remote_receiver:
-			try:
-				self.remote_receiver = get_remote_receiver()
-			except e:
-				pass
-				# TODO: handle exception
+    def start_compaign_unicast(self):
+        try:
+            f = open("script", "a+")
+            for flow in self.current_flows:
+                f.write(Sender.get_command_itg_send(flow))
+                f.write('\n')
+            f.close()
+            command = ["ITGSend", "script", "-x", "logfile" + str(self.ip_address)]
+            out = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = out.communicate()
+            os.remove("script")
+            for flow in self.current_flows:
+                r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
+                result = r.get_result_unicast(flow)
+                self.current_results.append(result)
+            return self.current_results
 
-		status = ''
-		try:
-			status = self.remote_receiver.setup_rcv(flow_config.source)
-		except e:
-			pass
-				# TODO: handle exception
+        except Exception as e:
+            print "start_compaign: ", str(e)
 
-		return status
+    def start_compaign_multicast(self):
+        try:
+            if len(self.current_flows) != 1:
+                return "only one flow is allowed in multicast mode"
+            command = ["iperf", "-c", self.current_flows[0].destination, "-u", "-t",
+                       str(self.current_flows[0].trans_duration)]
+            out = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = out.communicate()
+            for flow in self.current_flows:
+                r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
+                result = r.get_result_multicast(flow)
+                self.current_results.append(result)
+            return self.current_results
+        except Exception as e:
+            print "start_compaign multicast: ", str(e)
 
+    def start_compaign(self):
+        try:
+            del self.current_results[:]
+            if not self.is_multicast:
+                return self.start_compaign_unicast()
+            else:
+                return self.start_compaign_multicast()
+        except Exception as e:
+            print str(e)
 
-	def basic_ping(self):
-		print 'sender working'		# test purpose only
-
-
-	def post_result(self, result):
-		''' for the receiver to post results '''
-		results.append(result)
-
-	def start_compaign(self):
-		pass
-
-	def check_requirments(self):
-		return True
+    @staticmethod
+    def check_requirements():
+        try:
+            command = ["iperf", "-v"]
+            out = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = out.communicate()
+            command = ["ITGSend", "-h"]
+            out = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = out.communicate()
+            return True
+        except:
+            return False
 
