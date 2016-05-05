@@ -1,0 +1,52 @@
+html, body {
+
+	background-color: #f3f3f4;
+}
+
+.main_content {
+	float: none;
+	margin: 0 auto;
+}
+
+.scrollable {
+	overflow-y: scroll;
+	overflow-x: hidden; 
+	border: solid #bbb 1px;
+	height: 850px;
+}
+
+.flow_line {
+	border-radius : 4px;
+	background-color: #bbb;
+	width: 450px;
+	height: 40px;
+	padding: 10px;
+	color : #fff;
+}
+
+.flow_line:hover {
+	background-color: #aaa;
+}
+
+#flow_list {
+	padding-left: 10px;
+}
+
+hr {
+	border-top: 1px solid #d5d5d5;
+}
+
+.flow_description {
+	padding : 10px;
+	color: #a9a9a9;
+}
+
+.desc_header {	
+	font-weight: bold;
+	color: #5cae13;
+}
+
+#graph_container {
+	height: 600;
+	border: 1px solid #bbb;
+}
