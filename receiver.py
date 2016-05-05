@@ -10,7 +10,12 @@ from serialization import *
 def job(command):
     try:
         p = Popen(command, stdout=PIPE, stderr=PIPE)
-        p.communicate()
+        out = p.stdout.readline()
+        while True:
+            if out:
+                print out
+            out = p.stdout.readline()
+            # p.communicate()
     except Exception as e:
         print str(e)
         sys.exit(3)
@@ -34,7 +39,7 @@ class Receiver(object):
         try:
             if is_multicast:
                 self.is_multicast = True
-                command = ["iperf", "-s", "-B", self.multicast_address, "-u"]
+                command = ["iperf", "-s", "-B", self.multicast_address, "-u", "-i", "1"]
             else:
                 command = ["ITGRecv", "-a", self.ip_address]
             if not self.proc:

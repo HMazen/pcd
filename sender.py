@@ -11,6 +11,7 @@ class Sender(object):
         self.current_flows = None
         self.current_results = []
         self.is_multicast = False
+        self.multicast_address = ''
 
     def setup_compaign(self, flows, is_multicast):
         # check traffic generation requirements
@@ -60,10 +61,11 @@ class Sender(object):
         try:
             if len(self.current_flows) != 1:
                 return "only one flow is allowed in multicast mode"
-            command = ["iperf", "-c", self.current_flows[0].destination, "-u", "-t",
+            command = ["iperf", "-c", self.multicast_address, "-u", "-t",
                        str(self.current_flows[0].trans_duration)]
-            out = Popen(command, stdout=PIPE, stderr=PIPE)
-            (stdout, stderr) = out.communicate()
+            p = Popen(command, stdout=PIPE, stderr=PIPE)
+            p.communicate()
+
             for flow in self.current_flows:
                 r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
                 result = r.get_result_multicast(flow)

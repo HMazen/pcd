@@ -57,6 +57,8 @@ class compaign_config(object):
     def get_flows_by_sender(self, sender):
         return [flow for flow in self.flows if flow.source == sender]
 
+    def get_flows_by_receiver(self, receiver):
+        return [flow for flow in self.flows if flow.destination == receiver]
 
 class mesure_config(object):
     ''' Definition of a mesure configuration '''
