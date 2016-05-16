@@ -2,6 +2,8 @@ import multiprocessing
 
 import Pyro4
 
+from serialization import *
+
 
 def dump(obj):
     for attr in dir(obj):
@@ -113,8 +115,6 @@ def main():
         ns=True
     )
 
-
-'''
 if __name__ == '__main__':
     master = Master()
     f = flow_config()
@@ -147,4 +147,4 @@ if __name__ == '__main__':
 
     config = compaign_config([f])
     config.is_multicast = False
-    master.post_compaign_config(config)'''
+    master.post_compaign_config(config)

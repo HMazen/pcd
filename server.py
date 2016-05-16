@@ -22,7 +22,7 @@ wsock = None
 
 is_authenticate = False
 
-aaa = Cork('conf')
+aaa = Cork('/var/lib/shinken/modules/pcd/views')
 
 session_opts = {
     'session.cookie_expires': True,
