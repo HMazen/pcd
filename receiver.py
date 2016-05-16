@@ -10,12 +10,12 @@ from serialization import *
 def job(command):
     try:
         p = Popen(command, stdout=PIPE, stderr=PIPE)
-        out = p.stdout.readline()
+        '''out = p.stdout.readline()
         while True:
             if out:
                 print out
-            out = p.stdout.readline()
-            # p.communicate()
+            out = p.stdout.readline()'''
+        p.communicate()
     except Exception as e:
         print str(e)
         sys.exit(3)
@@ -84,7 +84,7 @@ class Receiver(object):
     def get_result_unicast(self, flow):
         try:
             mesure = flow.mesure
-            ps = Popen(['ITGDec', 'logfile' + str(flow.source), '-c', str(mesure.sampling_interval * 1000),
+            ps = Popen(['ITGDec', 'logfile' + str(flow.source), '-c', str(mesure.sampling_interval),
                         'result' + str(flow.flow_id)], stdout=PIPE).communicate()
             bitrate = metric()
             bitrate.name = Metrics.bit_rate
@@ -102,7 +102,16 @@ class Receiver(object):
                     jitter.values[float(metrics[0])] = float(metrics[3])
                     packet_loss.values[float(metrics[0])] = float(metrics[4])
             r = result()
-            r.metrics.extend([bitrate, delay, jitter, packet_loss])
+            for m in mesure.metrics:
+                if m == "jitter":
+                    r.metrics.append(jitter)
+                elif m == "packet loss":
+                    r.metrics.append(packet_loss)
+                elif m == "delay":
+                    r.metrics.append(delay)
+                else:
+                    r.metrics.append(bitrate)
+
             r.flow_id = flow.flow_id
             os.remove("logfile" + str(flow.source))
             os.remove("result" + str(flow.flow_id))

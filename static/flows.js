@@ -113,6 +113,14 @@ function build_flow() {
 		return;
 	}
 
+	var rate = $("#rate").val();
+	if( rate == "") {
+	    alert('nigga why you no provide a rate?')
+	    return;
+	}
+
+
+
 	flow_config.date = Date();
 	flow_config.source_ip = source;
 	flow_config.destination_ip = destination;
@@ -122,14 +130,18 @@ function build_flow() {
 	flow_config.trans_duration = trans_duration;
 	flow_config.metrics = metrics;
 	flow_config.sampling_interval = sampling_interval;
+	flow_config.rate = rate;
 	
 	if($("#ps_distro_chkb").is(":checked")){
-		flow_config.ps_distro = $("#ps_distro_select option:selected").text();
+		flow_config.ps_distro = $("#ps_distro_select option:selected").val();
 	}
 
 	if($("#idt_distro_chkb").is(":checked")){
-		flow_config.idt_distro = $("#idt_distro_select option:selected").text();
+		flow_config.idt_distro = $("#idt_distro_select option:selected").val();
 	}
+
+
+
 
 	console.log(flow_config);
 	append_flow(flow_config);
@@ -151,9 +163,11 @@ function build_flow() {
 	var flow_description_html  = '<span class="desc_header">Source IP: </span>' + source + '<br/>';
 	flow_description_html += '<span class="desc_header">Destination IP: </span>' + destination + '<br/>';
 	flow_description_html += '<span class="desc_header">Protocol: </span>' + protocol + '<br/>';
-	flow_description_html += '<span class="desc_header">Pacet size: </span>' + packet_size + '<br/>';
-	flow_description_html += '<span class="desc_header">Interdeparture time: </span>' + idt + '<br/>';
-	flow_description_html += '<span class="desc_header">Transmission duration: </span>' + protocol + '<br/>';
+	flow_description_html += '<span class="desc_header">Pacet size: </span>' + flow_config.ps_distro + '<br/>';
+	flow_description_html += '<span class="desc_header">lambda: </span>' + packet_size + '<br/>';
+	flow_description_html += '<span class="desc_header">Interdeparture time: </span>' + flow_config.idt_distro + '<br/>';
+	flow_description_html += '<span class="desc_header">lambda: </span>' + idt + '<br/>';
+	flow_description_html += '<span class="desc_header">Transmission duration: </span>' + trans_duration + '<br/>';
 	flow_description_html += '<span class="desc_header">Sampling interval: </span>' + sampling_interval + '<br/>';
 
 
@@ -223,7 +237,7 @@ $(document).ready(function() {
 
 
 
-    ws = new WebSocket('ws://localhost:8080/websocket');
+    ws = new WebSocket('ws://localhost:8081/websocket');
 
     ws.onopen = function(evt) {
         console.log('socket opened');
@@ -231,25 +245,85 @@ $(document).ready(function() {
     }
     ws.onmessage = function(evt) {
         var msg = JSON.parse(evt.data);
-        $('#graph_container').highcharts({
+        if(msg.con == 'con1')
+        {
+            $('#graph_container').highcharts({
 		chart : {
 			type : 'line'
 		},
 		title : {
-			text : 'Bandwidth'
+			text : msg.name + ' between 192.168.56.1 and 192.168.56.101'
 		},
 		xAxis : {
 			title : {
-				text : 'time'
-			}
+				text : '<b>time (s)</b>'
+			},
+			categories: msg.AxeX,
+
 		},
+		yAxis : {
+		    title : {
+				text : '<b>jitter (s)</b>'
+			},
+			labels : {
+			     formatter : function() {
+                    return this.value.toExponential(2);
+                }
+            }
+		},
+		 tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.y} s'
+        },
 		series : [
 		{
 			name : msg.name,
-			data : msg.data
+			data : msg.AxeY
 		}
 		]
 	});
+        }
+        else
+        {
+                $('#graph_container1').highcharts({
+		chart : {
+			type : 'line'
+		},
+		title : {
+			text : msg.name + ' between 192.168.56.101 and 192.168.56.102'
+		},
+		xAxis : {
+			title : {
+				text : '<b>time (s)</b>'
+			},
+			categories: msg.AxeX,
+
+		},
+		yAxis : {
+		    title : {
+				text : '<b>jitter (s)</b>'
+			},
+			labels : {
+			     formatter : function() {
+                    return this.value.toExponential(2);
+                }
+            }
+		},
+		 tooltip: {
+            headerFormat: '<b>{series.name}</b><br>',
+            pointFormat: '{point.y} s'
+        },
+		series : [
+		{
+			name : msg.name,
+			data : msg.AxeY
+		}
+		]
+	});
+
+
+        }
+
     }
     ws.onclose = function(evt) {
         console.log('connexion closed');

@@ -1,29 +1,52 @@
-from bottle import request, post, run, get, route, template, response
-from bottle import static_file, Bottle, url
-from gevent.pywsgi import WSGIServer
-from geventwebsocket import WebSocketError
-from geventwebsocket.handler import WebSocketHandler
-from utilities import compaign_config, flow_config
-from master import Master
-import json
-import bottle
-import sqlite3
-import Pyro4
-import time
 import hashlib
-import random
+import json
 import os
+import sqlite3
+
+import bottle
+from beaker.middleware import SessionMiddleware
+from bottle import request, template
+from bottle import static_file, url
+from cork import Cork
+from gevent.pywsgi import WSGIServer
+from geventwebsocket.handler import WebSocketHandler
+
+from master import *
+from utilities import compaign_config, flow_config, mesure_config, metric
 
 bottle.TEMPLATE_PATH.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "views")))
-master = Master()
 
 db_path = 'data.db'
 app = bottle.default_app()
 wsock = None
 
+is_authenticate = False
 
-#************************************************************ WEBSOCKET 
-@app.route('/websocket')
+aaa = Cork('conf')
+
+session_opts = {
+    'session.cookie_expires': True,
+    'session.encrypt_key': 'please use a random key and keep it secret!',
+    'session.httponly': True,
+    'session.timeout': 3600 * 24,  # 1 day
+    'session.type': 'cookie',
+    'session.validate_key': True,
+}
+
+app = SessionMiddleware(app, session_opts)
+
+
+# #  Bottle methods  # #
+def postd():
+    return bottle.request.forms
+
+
+def post_get(name, default=''):
+    return bottle.request.POST.get(name, default).strip()
+
+
+# ************************************************************ WEBSOCKET
+@bottle.route('/websocket')
 def handle_websocket():
 	global wsock
 	wsock = request.environ.get('wsgi.websocket')
@@ -76,7 +99,7 @@ def save_compaign_config(c):
 
 
 #************************************************************ LOAD COMPAIGN NAMES FROM DATABASE
-@app.route('/load_past_compaigns', method='get')
+@bottle.route('/load_past_compaigns', method='get')
 def load_compaigns():
 	print 'load_compaigns invoked'
 	con = sqlite3.connect(db_path)
@@ -89,74 +112,92 @@ def load_compaigns():
 
 
 #************************************************************ POST COMPAIGN CONFIG 														
-@app.route('/', method='post')
+@bottle.route('/', method='post')
 def post_config():
-	try:
-		compaign_json = request.json
-	except Exception as e:
-		print 'something bad happened' + str(e)
-		return
-	compaign = compaign_config()
-	flows = compaign_json['compaign']
-	compaign.name = compaign_json['name']
+    try:
+        compaign_json = request.json
+    except Exception as e:
+        print 'something bad happened' + str(e)
+        return
+    compaign = compaign_config([])
+    flows = compaign_json['compaign']
+    compaign.name = compaign_json['name']
 
-	for f in flows:
-		flow = flow_config()
-		temp = json.loads(f)
-		print 'flow id before encoding: ' + temp['date']
-		flow.flow_id = hashlib.md5(temp['date']).hexdigest()
-		print 'flow id after encoding: ' + flow.flow_id
-		flow.source = temp['source_ip']
-		flow.destination = temp['destination_ip']
-		flow.protocol = temp['protocol'].upper()
-		flow.ps = temp['packet_size']
-		flow.ps_distro = temp['ps_distro'] if temp.has_key('ps_distro') else 'null'
-		flow.idt = temp['idt'] 
-		flow.idt_distro = temp['idt_distro'] if temp.has_key('idt_distro') else 'null'
-		flow.trans_duration = temp['trans_duration']
-		flow.mesure = temp['metrics']
-		flow.sampling_interval = temp['sampling_interval']
-		compaign.add_flow(flow)
-		f1 = flow_config()
-                f1.flow_id = 123
-    f1.protocol = Protocols.udp
-    f1.idt_distro = Idt_disto.constant
-    f1.idt.append(1200)
-    f1.ps.append(488)
-    f1.ps_distro = Ps_distro.constant
-    m1 = mesure_config()
-    m1.sampling_interval = 1
-    m1.metrics.extend([Metrics.jitter, Metrics.packet_loss, Metrics.delay, Metrics.bit_rate])
-    f1.mesure = m1
-    f1.source = "192.168.56.101"
-    f1.destination = "192.168.56.102"
-
-    config = compaign_config([f])
-    config.is_multicast = True
-    master.post_compaign_config(config)
-
-	save_compaign_config(compaign)
-
-	print compaign_json
+    for f in flows:
+        flow = flow_config()
+        temp = json.loads(f)
+        print 'flow id before encoding: ' + temp['date']
+        flow.flow_id = hashlib.md5(temp['date']).hexdigest()
+        print 'flow id after encoding: ' + flow.flow_id
+        flow.source = temp['source_ip']
+        flow.destination = temp['destination_ip']
+        flow.protocol = temp['protocol']
+        flow.ps.append(temp['packet_size'])
+        flow.ps_distro = temp['ps_distro'] if temp.has_key('ps_distro') else '-c'
+        flow.idt.append(temp['rate'])
+        flow.idt_distro = temp['idt_distro'] if temp.has_key('idt_distro') else '-C'
+        flow.trans_duration = int(temp['trans_duration'])
+        mesure = mesure_config()
+        mesure.metrics.extend(temp['metrics'])
+        mesure.sampling_interval = int(temp['sampling_interval'])
+        flow.mesure = mesure
+        compaign.add_flow(flow)
+    master = Master()
+    r = master.post_compaign_config(compaign)
+    print r[0][0].values
+    global wsock
+    if wsock:
+        AxeX = [x for x, y in r[0][0].values.iteritems()]
+        AxeY = [y for x, y in r[0][0].values.iteritems()]
+        wsock.send(json.dumps({'name': r[0][0].name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r[0][0].values}))
+    else:
+        print 'wsock is not'
 
 
 #************************************************************ SEND JSON DATA
-@app.route('/test')
+@bottle.route('/test')
 def test():
-	global wsock
-	if wsock:
-		wsock.send(json.dumps({'name' : 'bandwidth', 'data' : [random.randrange(0,100) for i in range(0,100)]}))
-	else:
-		print 'wsock is not'
+    global wsock
+    if wsock:
+        r = metric()
+        r.name = 'jitter'
+        r.values = {0.0: 1.5e-05, 1.0: 1.5e-05, 2.0: 1.4e-05, 3.0: 2.3e-05, 4.0: 1.3e-05, 5.0: 1.2e-05, 6.0: 1.7e-05,
+                    7.0: 1.8e-05, 8.0: 1e-05, 9.0: 1.7e-05, 10.0: 1.2e-05, 11.0: 1.3e-05, 12.0: 1.4e-05, 13.0: 1.1e-05,
+                    14.0: 1.6e-05}
+        AxeX = [x for x, y in r.values.iteritems()]
+        AxeY = [y for x, y in r.values.iteritems()]
+        wsock.send(json.dumps({'name': r.name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r.values, 'con': 'con2'}))
+        r = metric()
+        r.name = 'jitter'
+        r.values = {0.0: 1.6e-05, 1.0: 1e-05, 2.0: 1.3e-05, 3.0: 1e-05, 4.0: 6e-06, 5.0: 1e-05, 6.0: 7e-06,
+                    7.0: 1.2e-05, 8.0: 9e-06, 9.0: 8e-06}
+        AxeX = [x for x, y in r.values.iteritems()]
+        AxeY = [y for x, y in r.values.iteritems()]
+        wsock.send(json.dumps({'name': r.name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r.values, 'con': 'con1'}))
+    else:
+        print 'wsock is not'
 
 #************************************************************ GET INDEX PAGE
-@app.route('/', method='get')
-def index():
-	if not wsock:
-		pass
-	return template('index_1.tpl', url=url)
 
-@app.route('/load_configs')
+
+@bottle.route('/logout')
+def logout():
+    aaa.logout(success_redirect='/')
+
+
+@bottle.route('/', method='get')
+def index():
+    return template('index.tpl', url=url)
+
+
+@bottle.route('/', method='post')
+def index():
+    username = post_get('login')
+    password = post_get('password')
+    aaa.login(username, password, success_redirect='/start_compaign', fail_redirect='/')
+
+
+@bottle.route('/load_configs')
 def index():
 	''' return past configs '''
 	infile = open('compaigns', 'r')
@@ -164,7 +205,13 @@ def index():
 	return json.dumps(data)
 
 
-@app.route('/check_compaign', method='post')
+@bottle.route("/start_compaign")
+def index():
+    aaa.require(role='admin', fixed_role=True, fail_redirect='/')
+    return template("index_1.tpl", url=url)
+
+
+@bottle.route('/check_compaign', method='post')
 def check_compaing_name():
 	print 'CHECK HAS BEEN CALLED'
 	data = request.json
@@ -181,14 +228,13 @@ def check_compaing_name():
 	return json.dumps(check_result)
 
 
-@app.route('/static/<filename>', name='static')
+@bottle.route('/static/<filename>', name='static')
 def static(filename):
     return static_file(filename, root='static')
 
 
-
 #************************************************************ SERVE 
-server = WSGIServer(("0.0.0.0", 8080), app,
+server = WSGIServer(("0.0.0.0", 8081), app,
                     handler_class=WebSocketHandler)
 
 server.serve_forever()

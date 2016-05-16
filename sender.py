@@ -45,8 +45,9 @@ class Sender(object):
                 f.write('\n')
             f.close()
             command = ["ITGSend", "script", "-x", "logfile" + str(self.ip_address)]
-            out = Popen(command, stdout=PIPE, stderr=PIPE)
-            (stdout, stderr) = out.communicate()
+            p = Popen(command, stdout=PIPE, stderr=PIPE)
+            (stdout, stderr) = p.communicate()
+
             os.remove("script")
             for flow in self.current_flows:
                 r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')

@@ -22,6 +22,9 @@
 					<li><a href="#">Compaigns</a></li>
 					<li><a href="#">Results</a></li>
 				</ul>
+				<ul class="nav navbar-nav navbar-right">
+                <li><a href="/logout">Logout</a></li>
+                </ul>
 			</div>
 		</div>
 	</nav>
@@ -47,19 +50,19 @@
 					<label>Protocol</label>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="protocol" id="optionsRadios1" value="tcp" checked>
+					    <input type="radio" name="protocol" id="optionsRadios1" value="TCP" checked>
 					    TCP
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="protocol" id="optionsRadios2" value="udp">
+					    <input type="radio" name="protocol" id="optionsRadios2" value="UDP">
 					    UDP
 					  </label>
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="protocol" id="optionsRadios2" value="udp_multi">
+					    <input type="radio" name="protocol" id="optionsRadios2" value="True">
 					    UDP Multicast
 					  </label>
 					</div>
@@ -83,14 +86,16 @@
 						Enable		
 					  </label>
 					  <select class="form-control" id="ps_distro_select">
-						  <option>Gamma</option>
-						  <option>Uniform</option>
-						  <option>Noramal</option>
-						  <option>Cauchy</option>
-						  <option>Constant</option>
-						  <option>Exponential</option>
+						  <option value ="-g">Gamma</option>
+						  <option value="-u">Uniform</option>
+						  <option value="-n">Normal</option>
+						  <option value="-y">Cauchy</option>
+						  <option value="-e">Exponential</option>
+						  <option value="-v">Pareto</option>
+						  <option value="-w">Weibull</option>
+						  <option value="-o">Poisson</option>
 					 </select><br>
-					Rate: &lambda;&nbsp;<input type="text" width="20">
+					<!-- Rate: &lambda;&nbsp;<input type="text" width="20"> -->
 					</div>
 					<div class="form-group">
 				    <label for="idt">Inter-departure time (ms)</label>
@@ -101,22 +106,23 @@
 				  <div class="checkbox">
 					  <label>
 					    <input type="checkbox" id="idt_distro_chkb" value="">
-						Enable		
+						Enable
 					  </label>
 					  <select class="form-control" id="idt_distro_select">
-						  <option>Gamma</option>
-						  <option>Uniform</option>
-						  <option>Noramal</option>
-						  <option>Cauchy</option>
-						  <option>Constant</option>
-						  <option>Exponential</option>
+						  <option value ="-G">Gamma</option>
+						  <option value="-U">Uniform</option>
+						  <option value="-N">Normal</option>
+						  <option value="-Y">Cauchy</option>
+						  <option value="-E">Exponential</option>
+						  <option value="-V">Pareto</option>
+						  <option value="-O">Poisson</option>
 					 </select><br>
-					Rate: &lambda;&nbsp;<input type="text" width="20">
+					Rate: &lambda;&nbsp;<input type="text" width="20" id="rate">
 					</div>
 					<label>Metrics</label><br/>
 					<div id="metrics">
 						<label>
-						    <input type="checkbox" id="bandwidth_chkb" value="bandwidth">
+						    <input type="checkbox" id="bandwidth_chkb" value="bit rate">
 							Bandwidth		
 						 </label><br/>
 						 <label>
@@ -124,11 +130,11 @@
 							Jitter		
 						 </label><br/>
 						 <label>
-						    <input type="checkbox" id="loss_chkb" value="loss_rate">
+						    <input type="checkbox" id="loss_chkb" value="packet loss">
 							Loss rate		
 						 </label><br/>
 						 <label>
-						    <input type="checkbox" id="rtd_chkb" value="rtd">
+						    <input type="checkbox" id="rtd_chkb" value="delay">
 							Round trip delay	
 						 </label>
 						 </div>
@@ -137,7 +143,7 @@
 					    <label for="sample_interval">Sampling interval (ms)</label>
 					    <input type="text" class="form-control" id="sample_interval" placeholder="100ms">
 
-					    <label for="trans_duration">Sampling interval (ms)</label>
+					    <label for="trans_duration">Duration (s)</label>
 					    <input type="text" class="form-control" id="trans_duration" placeholder="1min">
 				  	</div>
 				  		
@@ -163,6 +169,10 @@
 		<div class="row">
 			<header class="h1 text-center">Compaign Results</header>
 			<div id="graph_container">
+				<!-- graph will go here -->
+			</div>
+			<br/><br/>
+			<div id="graph_container1">
 				<!-- graph will go here -->
 			</div>
 			<br/><br/>

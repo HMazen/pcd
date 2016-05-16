@@ -2,16 +2,18 @@ import multiprocessing
 
 import Pyro4
 
-from serialization import *
+
+def dump(obj):
+    for attr in dir(obj):
+        print "obj.%s = %s" % (attr, getattr(obj, attr))
 
 
 def job(obj, liste):
     try:
         result = obj.start_compaign()
-        print result
+        # print result
         for r in result:
-            liste.append(r.flow_id)
-            liste.append(r.metrics[0].values)
+            liste.append(r.metrics)
     except Exception as e:
         print "jobs ", str(e)
 
@@ -30,6 +32,7 @@ class Master(object):
         if self.pending_compaign:
             return
         self.pending_compaigns = config
+        # dump(config.flows[0])
         result_check = self.check_hosts_availability(config.get_senders(), config.get_receivers(),
                                                      self.pending_compaigns.is_multicast)
         if result_check:
@@ -42,11 +45,11 @@ class Master(object):
                 proc.join()
             for r in self.current_receivers:
                 r.terminate_proc()
-            print self.results
         self.pending_compaigns = None
         del self.current_receivers[:]
         del self.current_senders[:]
         del self.current_processes[:]
+        return self.results
         # TODO: traiter l'erreur dans le cas de l'echec de start_compaign
 
     def check_hosts_availability(self, senders, receivers, is_multicast):
@@ -111,6 +114,7 @@ def main():
     )
 
 
+'''
 if __name__ == '__main__':
     master = Master()
     f = flow_config()
@@ -142,5 +146,5 @@ if __name__ == '__main__':
     f1.destination = "192.168.56.102"
 
     config = compaign_config([f])
-    config.is_multicast = True
-    master.post_compaign_config(config)
+    config.is_multicast = False
+    master.post_compaign_config(config)'''
