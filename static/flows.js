@@ -25,6 +25,8 @@ function send_config() {
 			console.log('could not send config');
 		}
 	});
+	$.blockUI({ message: '<h3 style="color:#3366CC"><img style="height:120px;" src="static/loading2.gif"  />Waiting for results</h3>' });
+
 }
 
 // load past compaigns configs from server
@@ -75,7 +77,9 @@ function build_flow() {
 		return;
 	}
 
-	var protocol =	$('input[name=protocol]:checked').val()
+	var protocol =	$('input[name=protocol]:checked').val();
+	console.log(protocol);
+
 	var packet_size = $("#packet_size").val();
 	if(!check_param(packet_size)) {
 		alert('invalid packet size');
@@ -108,29 +112,15 @@ function build_flow() {
 		}
 	});
 
-	if(metrics.length == 0) {
-		alert('no metrics specified');
-		return;
-	}
-
-	var rate = $("#rate").val();
-	if( rate == "") {
-	    alert('nigga why you no provide a rate?')
-	    return;
-	}
-
-
-
 	flow_config.date = Date();
 	flow_config.source_ip = source;
 	flow_config.destination_ip = destination;
 	flow_config.protocol = protocol;
 	flow_config.packet_size = packet_size;
-	flow_config.idt = idt;
 	flow_config.trans_duration = trans_duration;
 	flow_config.metrics = metrics;
 	flow_config.sampling_interval = sampling_interval;
-	flow_config.rate = rate;
+	flow_config.rate = idt;
 	
 	if($("#ps_distro_chkb").is(":checked")){
 		flow_config.ps_distro = $("#ps_distro_select option:selected").val();
@@ -211,7 +201,8 @@ function new_compaign() {
 
 	$("#add_flow_btn").prop('disabled', false);
 	$("#compaign_config :input").attr('disabled', false);
-
+    $('#ps_distro_select').prop('disabled', true);
+    $('#idt_distro_select').prop('disabled', true);
 	unsaved_compaign = true;
 
 	return false;
@@ -225,7 +216,6 @@ function drop_current_compaign() {						//=================== DROP CURRENT COMPA
 
 
 $(document).ready(function() {
-
 	// INITIALIZE WEBSOCKET
 	 if (!window.WebSocket) {
         if (window.MozWebSocket) {
@@ -244,6 +234,9 @@ $(document).ready(function() {
         ws.send('first message');
     }
     ws.onmessage = function(evt) {
+        console.log('before unblock');
+        $.unblockUI();
+        console.log('after unblock');
         var msg = JSON.parse(evt.data);
         console.log(msg);
 
@@ -305,6 +298,11 @@ $(document).ready(function() {
 	});
 	$('#graphs').append('<hr>');
    }
+
+   $('html, body').animate({
+        scrollTop: $("#graphs").offset().top
+    }, 500);
+
  }
     ws.onclose = function(evt) {
         console.log('connexion closed');
@@ -317,6 +315,28 @@ $(document).ready(function() {
         return false;
     });*/
 
+$("#ps_distro_chkb").click( function(){
+    if( $(this).is(':checked') )
+    {
+        $('#ps_distro_select').prop('disabled', false);
+    }
+
+   else
+   ('#ps_distro_select').prop('disabled', true);
+});
+
+
+$( "select" )
+  .change(function () {
+    var str = "";
+    $( "select option:selected" ).each(function() {
+      if($( this ).text() == "Exponential")
+      {
+        $('#rate_ps').fadeIn("slow");
+      }
+    });
+  })
+  .change();
 
 
 	// initialise interface
@@ -335,7 +355,7 @@ $(document).ready(function() {
 			$('#idt_distro_select').prop('disabled', true);
 		} else {
 			$('#ps_distro_chkb').prop('disabled', false);
-			$('#ps_distro_select').prop('disabled', false);
+			$('#ps_distro_select').prop('disabled', true);
 			$('#idt_distro_chkb').prop('disabled', false);
 			$('#idt_distro_select').prop('disabled', false);
 		}

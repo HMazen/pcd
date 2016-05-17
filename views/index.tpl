@@ -27,7 +27,7 @@
 		<div class="row">
 			<div class="text-center col-md-6 col-md-offset-3">
 				<br/><br/>
-				<img src="shinken_logo.png"/>
+				<img src="{{ url('static', filename='shinken_logo.png') }}"/>
 				<h4>Traffic Generation<br/>and Performance Measuring Module</h4>
 				<br><br>
 				<form action ="/" method="POST">

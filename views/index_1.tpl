@@ -7,6 +7,7 @@
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" type="text/css" href="{{ url('static', filename='styles.css') }}">
+
 	<!--<link rel="stylesheet" type="text/css" href="/static/styles.css">-->
 </head>
 <body>
@@ -62,7 +63,7 @@
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="protocol" id="optionsRadios2" value="True">
+					    <input type="radio" name="protocol" id="optionsRadios2" value="Multicast">
 					    UDP Multicast
 					  </label>
 					</div>
@@ -85,6 +86,7 @@
 					    <input type="checkbox" id="ps_distro_chkb" value="">
 						Enable		
 					  </label>
+					  <br><br>
 					  <select class="form-control" id="ps_distro_select">
 						  <option value ="-g">Gamma</option>
 						  <option value="-u">Uniform</option>
@@ -94,8 +96,8 @@
 						  <option value="-v">Pareto</option>
 						  <option value="-w">Weibull</option>
 						  <option value="-o">Poisson</option>
-					 </select><br>
-					<!-- Rate: &lambda;&nbsp;<input type="text" width="20"> -->
+					 </select>
+					<div id = "rate_ps"><br>Rate: &lambda;&nbsp;<input type="text" width="20"/></div>
 					</div>
 					<div class="form-group">
 				    <label for="idt">Inter-departure time (ms)</label>
@@ -108,6 +110,7 @@
 					    <input type="checkbox" id="idt_distro_chkb" value="">
 						Enable
 					  </label>
+					  <br><br>
 					  <select class="form-control" id="idt_distro_select">
 						  <option value ="-G">Gamma</option>
 						  <option value="-U">Uniform</option>
@@ -116,8 +119,7 @@
 						  <option value="-E">Exponential</option>
 						  <option value="-V">Pareto</option>
 						  <option value="-O">Poisson</option>
-					 </select><br>
-					Rate: &lambda;&nbsp;<input type="text" width="20" id="rate">
+					 </select>
 					</div>
 					<label>Metrics</label><br/>
 					<div id="metrics">
@@ -176,6 +178,7 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="{{ url('static', filename='jquery-2.2.2.js') }}"></script>
 	<script type="text/javascript" src="{{ url('static', filename='utilities.js') }}"></script>
+	<script type="text/javascript" src="{{ url('static', filename='jquery.blockUI.js') }}"></script>
 	<script type="text/javascript" src="{{ url('static', filename='flows.js') }}"></script>
 	<script type="text/javascript" src="{{ url('static', filename='highcharts.js') }}"></script>
 

@@ -134,6 +134,9 @@ def post_config():
         flow.source = temp['source_ip']
         flow.destination = temp['destination_ip']
         flow.protocol = temp['protocol']
+        if flow.protocol == "Multicast":
+            flow.protocol = "UDP"
+            compaign.is_multicast = True
         flow.ps.append(temp['packet_size'])
         flow.ps_distro = temp['ps_distro'] if temp.has_key('ps_distro') else '-c'
         flow.idt.append(temp['rate'])
@@ -149,6 +152,7 @@ def post_config():
     receiver = ''
 
     master = Master()
+    print compaign.is_multicast
     results = master.post_compaign_config(compaign)
     global wsock
     json_results = defaultdict(list)
@@ -214,7 +218,7 @@ def index():
 
 @bottle.route("/start_compaign")
 def index():
-    # aaa.require(role='admin', fixed_role=True, fail_redirect='/')
+    aaa.require(role='admin', fixed_role=True, fail_redirect='/')
     return template("index_1.tpl", url=url)
 
 

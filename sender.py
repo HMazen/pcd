@@ -1,4 +1,4 @@
-import os
+#!/usr/bin/python
 from subprocess import *
 
 import Pyro4

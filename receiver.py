@@ -1,3 +1,4 @@
+#!/usr/bin/python
 import multiprocessing
 import os
 import re
@@ -136,7 +137,9 @@ class Receiver(object):
                 test = False
                 for s in f.readlines():
                     if test:
+                        s = s.replace('-', ' ')
                         metrics = re.split('\s+', s)
+                        print metrics
                         bitrate.values[float(metrics[3])] = float(metrics[5])
                         jitter.values[float(metrics[3])] = float(metrics[9])
                         packet_loss.values[float(metrics[3])] = (
@@ -150,10 +153,8 @@ class Receiver(object):
                     r.metrics.append(jitter)
                 elif m == "packet loss":
                     r.metrics.append(packet_loss)
-                elif m == "delay":
-                    r.metrics.append(delay)
                 else:
-                    r.metrics.append(bitrate)
+                    r.metrics.append(delay)
             r.flow_id = flow.flow_id
             print "multicast with success"
             return r
