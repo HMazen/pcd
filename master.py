@@ -15,7 +15,6 @@ def job(obj, liste):
         results = obj.start_compaign()
         for r in results:
             liste.append(r)
-            print r.metrics
     except Exception as e:
         print "jobs ", str(e)
 

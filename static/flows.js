@@ -258,7 +258,7 @@ $(document).ready(function() {
 			type : 'line'
 		},
 		title : {
-			text : entry.name + ' between '+entry.sender+' and '+entry.sender
+			text : entry.name + ' between '+entry.sender+' and '+entry.receiver
 		},
 		xAxis : {
 			title : {

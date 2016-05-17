@@ -157,6 +157,7 @@ def post_config():
             if r.flow_id == f.flow_id:
                 sender = f.source
                 receiver = f.destination
+        print sender + "    " + receiver
         for metric in r.metrics:
             AxeX = [x for x, y in metric.values.iteritems()]
             AxeY = [y for x, y in metric.values.iteritems()]

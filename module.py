@@ -19,8 +19,14 @@ def job():
     err = ""
     try:
         logger.info('********** job method *********')
-        proc = Popen(['python', '/var/lib/shinken/modules/pcd/server.py'], stdout=PIPE, stderr=PIPE)
-        (str, err) = proc.communicate()
+        p = Popen(['python', '/var/lib/shinken/modules/pcd/server.py'], stdout=PIPE, stderr=PIPE)
+        out = p.stdout.readline()
+        while True:
+            if out:
+                logger.info("---------------------------" + out)
+            out = p.stdout.readline()
+        (str, err) = p.communicate()
+        logger.info("---------------------------" + str + "     " + err)
     except Exception as e:
         logger.info('job: ' + str(e))
         logger.info("||||||||||||||||||||||" + str + "     " + err)
