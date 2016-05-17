@@ -1,5 +1,6 @@
 import multiprocessing
 import os
+import re
 import sys
 import time
 from subprocess import Popen, PIPE, check_output
@@ -9,15 +10,11 @@ from serialization import *
 
 def job(command):
     try:
-        p = Popen(command, stdout=PIPE, stderr=PIPE)
-        '''out = p.stdout.readline()
-        while True:
-            if out:
-                print out
-            out = p.stdout.readline()'''
-        p.communicate()
+        with open("re", "w+") as out:
+            p = Popen(command, stdout=out, stderr=PIPE)
+            p.communicate()
     except Exception as e:
-        print str(e)
+        print "receiver job: ", str(e)
         sys.exit(3)
 
 
@@ -29,7 +26,6 @@ class Receiver(object):
         self.remote_sender = None
         self.result = None
         self.proc = None
-        self.is_multicast = False
 
     def basic_ping(self):
         print 'receiver working'  # test purpose only
@@ -38,7 +34,6 @@ class Receiver(object):
         self.terminate_proc()
         try:
             if is_multicast:
-                self.is_multicast = True
                 command = ["iperf", "-s", "-B", self.multicast_address, "-u", "-i", "1"]
             else:
                 command = ["ITGRecv", "-a", self.ip_address]
@@ -59,6 +54,7 @@ class Receiver(object):
         try:
             if self.proc:
                 self.proc.terminate()
+                self.proc = None
         except:
             pass
         try:
@@ -113,16 +109,53 @@ class Receiver(object):
                     r.metrics.append(bitrate)
 
             r.flow_id = flow.flow_id
-            os.remove("logfile" + str(flow.source))
-            os.remove("result" + str(flow.flow_id))
-            self.is_multicast = False
+            try:
+                os.remove("logfile" + str(flow.source))
+            except:
+                pass
+            try:
+                os.remove("result" + str(flow.flow_id))
+            except:
+                pass
             return r
         except Exception as e:
             print "receiver get_result: ", str(e)
 
     def get_result_multicast(self, flow):
         try:
-            self.is_multicast = False
+            mesure = flow.mesure
+            bitrate = metric()
+            bitrate.name = Metrics.bit_rate
+            delay = metric()
+            delay.name = Metrics.delay
+            jitter = metric()
+            jitter.name = Metrics.jitter
+            packet_loss = metric()
+            packet_loss.name = Metrics.packet_loss
+            with open("re", "r") as f:
+                test = False
+                for s in f.readlines():
+                    if test:
+                        metrics = re.split('\s+', s)
+                        bitrate.values[float(metrics[3])] = float(metrics[5])
+                        jitter.values[float(metrics[3])] = float(metrics[9])
+                        packet_loss.values[float(metrics[3])] = (
+                            float(metrics[11].replace('/', '')) / float(metrics[12]))
+                        print packet_loss.values
+                    if s.find("Transfer") != -1:
+                        test = True
+            r = result()
+            for m in mesure.metrics:
+                if m == "jitter":
+                    r.metrics.append(jitter)
+                elif m == "packet loss":
+                    r.metrics.append(packet_loss)
+                elif m == "delay":
+                    r.metrics.append(delay)
+                else:
+                    r.metrics.append(bitrate)
+            r.flow_id = flow.flow_id
             print "multicast with success"
+            return r
         except Exception as e:
             print "receiver get_result: ", str(e)

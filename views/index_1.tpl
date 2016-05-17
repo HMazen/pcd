@@ -6,8 +6,8 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-	<!--<link rel="stylesheet" type="text/css" href="{{ url('static', filename='styles.css') }}">-->
-	<link rel="stylesheet" type="text/css" href="/static/styles.css">
+	<link rel="stylesheet" type="text/css" href="{{ url('static', filename='styles.css') }}">
+	<!--<link rel="stylesheet" type="text/css" href="/static/styles.css">-->
 </head>
 <body>
 
@@ -166,16 +166,8 @@
 		<br/><br/><br/><br/>
 		<hr>
 		<br/>
-		<div class="row">
+		<div class="row" id="graphs">
 			<header class="h1 text-center">Compaign Results</header>
-			<div id="graph_container">
-				<!-- graph will go here -->
-			</div>
-			<br/><br/>
-			<div id="graph_container1">
-				<!-- graph will go here -->
-			</div>
-			<br/><br/>
 		</div>
 
 	</div>

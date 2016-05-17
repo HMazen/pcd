@@ -12,10 +12,10 @@ def dump(obj):
 
 def job(obj, liste):
     try:
-        result = obj.start_compaign()
-        # print result
-        for r in result:
-            liste.append(r.metrics)
+        results = obj.start_compaign()
+        for r in results:
+            liste.append(r)
+            print r.metrics
     except Exception as e:
         print "jobs ", str(e)
 

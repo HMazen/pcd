@@ -2,6 +2,7 @@ import hashlib
 import json
 import os
 import sqlite3
+from collections import defaultdict
 
 import bottle
 from beaker.middleware import SessionMiddleware
@@ -48,11 +49,12 @@ def post_get(name, default=''):
 # ************************************************************ WEBSOCKET
 @bottle.route('/websocket')
 def handle_websocket():
-	global wsock
-	wsock = request.environ.get('wsgi.websocket')
-	while True:
-		wsock.receive()
-		wsock.send('message')
+    global wsock
+    print "hello"
+    wsock = request.environ.get('wsgi.websocket')
+    while True:
+        wsock.receive()
+        wsock.send('message')
 
 
 #************************************************************ SAVE COMPAIGN CONFIG TO DATABASE
@@ -112,7 +114,7 @@ def load_compaigns():
 
 
 #************************************************************ POST COMPAIGN CONFIG 														
-@bottle.route('/', method='post')
+@bottle.route('/start_compaign', method='post')
 def post_config():
     try:
         compaign_json = request.json
@@ -142,16 +144,27 @@ def post_config():
         mesure.sampling_interval = int(temp['sampling_interval'])
         flow.mesure = mesure
         compaign.add_flow(flow)
+
+    sender = ''
+    receiver = ''
+
     master = Master()
-    r = master.post_compaign_config(compaign)
-    print r[0][0].values
+    results = master.post_compaign_config(compaign)
     global wsock
-    if wsock:
-        AxeX = [x for x, y in r[0][0].values.iteritems()]
-        AxeY = [y for x, y in r[0][0].values.iteritems()]
-        wsock.send(json.dumps({'name': r[0][0].name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r[0][0].values}))
-    else:
-        print 'wsock is not'
+    json_results = defaultdict(list)
+    for r in results:
+        for f in compaign.flows:
+            if r.flow_id == f.flow_id:
+                sender = f.source
+                receiver = f.destination
+        for metric in r.metrics:
+            AxeX = [x for x, y in metric.values.iteritems()]
+            AxeY = [y for x, y in metric.values.iteritems()]
+            json_results[r.flow_id].append(
+                {'flow_id': r.flow_id, 'name': metric.name, 'AxeX': AxeX, 'AxeY': AxeY, "sender": sender,
+                 "receiver": receiver});
+
+    wsock.send(json.dumps(json_results))
 
 
 #************************************************************ SEND JSON DATA
@@ -166,14 +179,7 @@ def test():
                     14.0: 1.6e-05}
         AxeX = [x for x, y in r.values.iteritems()]
         AxeY = [y for x, y in r.values.iteritems()]
-        wsock.send(json.dumps({'name': r.name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r.values, 'con': 'con2'}))
-        r = metric()
-        r.name = 'jitter'
-        r.values = {0.0: 1.6e-05, 1.0: 1e-05, 2.0: 1.3e-05, 3.0: 1e-05, 4.0: 6e-06, 5.0: 1e-05, 6.0: 7e-06,
-                    7.0: 1.2e-05, 8.0: 9e-06, 9.0: 8e-06}
-        AxeX = [x for x, y in r.values.iteritems()]
-        AxeY = [y for x, y in r.values.iteritems()]
-        wsock.send(json.dumps({'name': r.name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r.values, 'con': 'con1'}))
+        wsock.send(json.dumps({'name': r.name, 'AxeX': AxeX, 'AxeY': AxeY, 'data': r.values, 'con': 'con'}))
     else:
         print 'wsock is not'
 
@@ -207,7 +213,7 @@ def index():
 
 @bottle.route("/start_compaign")
 def index():
-    aaa.require(role='admin', fixed_role=True, fail_redirect='/')
+    # aaa.require(role='admin', fixed_role=True, fail_redirect='/')
     return template("index_1.tpl", url=url)
 
 

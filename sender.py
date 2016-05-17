@@ -1,3 +1,4 @@
+import os
 from subprocess import *
 
 import Pyro4
@@ -21,9 +22,6 @@ class Sender(object):
         self.is_multicast = is_multicast
         self.current_flows = flows
         return True
-
-    def basic_ping(self):
-        print 'sender working'  # test purpose only
 
     @staticmethod
     def get_command_itg_send(flow):
@@ -70,6 +68,7 @@ class Sender(object):
             for flow in self.current_flows:
                 r = Pyro4.Proxy('PYRO:' + flow.destination + '_receiver@' + flow.destination + ':45000')
                 result = r.get_result_multicast(flow)
+                print result
                 self.current_results.append(result)
             return self.current_results
         except Exception as e:
@@ -83,7 +82,7 @@ class Sender(object):
             else:
                 return self.start_compaign_multicast()
         except Exception as e:
-            print str(e)
+            print "sender: start_compign ", str(e)
 
     @staticmethod
     def check_requirements():

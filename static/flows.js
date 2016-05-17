@@ -3,7 +3,7 @@ var compaigns = Object();		// associative array for compaign-flows
 var unsaved_compaign = false;
 var flowid = 0;
 
-var _url = "/";
+var _url = "/start_compaign";
 
 // push compaign config to server
 function send_config() {
@@ -245,88 +245,70 @@ $(document).ready(function() {
     }
     ws.onmessage = function(evt) {
         var msg = JSON.parse(evt.data);
-        if(msg.con == 'con1')
-        {
-            $('#graph_container').highcharts({
+        console.log(msg);
+
+        for (var key in msg) {
+            $('#graphs').append('<header class="h2 text-center"> flow id: '+key+'</header>');
+            $('#graphs').append('<hr>');
+            msg[key].forEach(function(entry){
+
+        $('#graphs').append('<div class="graph" id="graph_container'+entry.flow_id+entry.name.replace(/ /g,'')+'"></div><br/><br/>');
+        $('#graph_container'+entry.flow_id+entry.name.replace(/ /g,'')).highcharts({
 		chart : {
 			type : 'line'
 		},
 		title : {
-			text : msg.name + ' between 192.168.56.1 and 192.168.56.101'
+			text : entry.name + ' between '+entry.sender+' and '+entry.sender
 		},
 		xAxis : {
 			title : {
 				text : '<b>time (s)</b>'
 			},
-			categories: msg.AxeX,
+			categories: entry.AxeX,
 
 		},
 		yAxis : {
 		    title : {
-				text : '<b>jitter (s)</b>'
+				text : '<b>'+entry.name+' (s)</b>'
 			},
 			labels : {
 			     formatter : function() {
                     return this.value.toExponential(2);
                 }
-            }
+            },
 		},
 		 tooltip: {
             headerFormat: '<b>{series.name}</b><br>',
             pointFormat: '{point.y} s'
         },
-		series : [
-		{
-			name : msg.name,
-			data : msg.AxeY
-		}
-		]
-	});
-        }
-        else
-        {
-                $('#graph_container1').highcharts({
-		chart : {
-			type : 'line'
-		},
-		title : {
-			text : msg.name + ' between 192.168.56.101 and 192.168.56.102'
-		},
-		xAxis : {
-			title : {
-				text : '<b>time (s)</b>'
-			},
-			categories: msg.AxeX,
-
-		},
-		yAxis : {
-		    title : {
-				text : '<b>jitter (s)</b>'
-			},
-			labels : {
-			     formatter : function() {
-                    return this.value.toExponential(2);
-                }
+        plotOptions: {
+            series: {
+                minPointLength: 3
             }
-		},
-		 tooltip: {
-            headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.y} s'
         },
 		series : [
 		{
-			name : msg.name,
-			data : msg.AxeY
-		}
-		]
-	});
-
-
+			name : entry.name,
+			data : entry.AxeY
+		}],
+		lang: {
+            noData: "Nichts zu anzeigen"
+        },
+        noData: {
+            style: {
+                fontWeight: 'bold',
+                fontSize: '15px',
+                color: '#303030'
+            }
         }
-
-    }
+	});
+	});
+	$('#graphs').append('<hr>');
+   }
+ }
     ws.onclose = function(evt) {
         console.log('connexion closed');
+        ws = new WebSocket('ws://localhost:8081/websocket');
     }
 
    /* $('#send_over_ws').click(function() {
