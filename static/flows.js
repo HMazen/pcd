@@ -136,14 +136,14 @@ function build_flow() {
     var tab = [min_rate,max_rate];
     console.log(flow_config.ps_distro);
 	if (flow_config.ps_distro=='-e')
-	flow_config.packet_size = rate;
+	flow_config.packet_size = [rate];
 	else
-	flow_config.packet_size =packet_size;
+	flow_config.packet_size =[packet_size];
 
 	if (flow_config.idt_distro=='-U')
 	flow_config.rate = tab;
 	else
-	flow_config.rate =idt;
+	flow_config.rate =[idt];
 
 
 

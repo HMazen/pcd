@@ -146,9 +146,10 @@ def post_config():
 
         flow.ps_distro = temp['ps_distro'] if temp.has_key('ps_distro') else '-c'
 
-        flow.ps.append(int(temp['packet_size']))
+        for e in temp['packet_size']:
+            flow.ps.append(e)
         for e in temp['rate']:
-            flow.idt.append(int(e))
+            flow.idt.append(e)
         flow.idt_distro = temp['idt_distro'] if temp.has_key('idt_distro') else '-C'
         flow.trans_duration = int(temp['trans_duration'])
         mesure = mesure_config()

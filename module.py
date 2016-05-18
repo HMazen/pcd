@@ -1,6 +1,5 @@
-import multiprocessing
 import os
-from subprocess import Popen, PIPE, check_output
+from subprocess import Popen, PIPE
 
 import bottle
 from shinken.basemodule import BaseModule
@@ -69,25 +68,7 @@ class pcd_module_class(BaseModule):
 
     def main(self):
         try:
-            proc = multiprocessing.Process(target=job)
-            proc.start()
-            proc.join()
+            pass
         except Exception as e:
             logger.info('main: ' + str(e))
 
-    def stop_process(self):
-        logger.info('********* before leaving stop_process *********')
-        try:
-            server_pid = None
-            ps = Popen(('ps', '-ef'), stdout=PIPE)
-            output = check_output(('grep', '[s]erver.py'), stdin=ps.stdout)
-            ps.wait()
-            logger.info(output)
-            server_pid = output.split()[1]
-            if server_pid:
-                logger.info('pid : ' + server_pid)
-                Popen(('kill', '-9', server_pid), stdout=PIPE)
-                ps.wait()
-        except Exception as e:
-            logger.info('stop_process: ' + str(e))
-        super(pcd_module_class, self).stop_process()
