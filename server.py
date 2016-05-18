@@ -17,6 +17,12 @@ from utilities import compaign_config, flow_config, mesure_config, metric
 
 bottle.TEMPLATE_PATH.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "views")))
 
+
+def dump(obj):
+    for attr in dir(obj):
+        print "obj.%s = %s" % (attr, getattr(obj, attr))
+
+
 db_path = 'data.db'
 app = bottle.default_app()
 wsock = None
@@ -137,22 +143,25 @@ def post_config():
         if flow.protocol == "Multicast":
             flow.protocol = "UDP"
             compaign.is_multicast = True
-        flow.ps.append(temp['packet_size'])
+
         flow.ps_distro = temp['ps_distro'] if temp.has_key('ps_distro') else '-c'
-        flow.idt.append(temp['rate'])
+
+        flow.ps.append(int(temp['packet_size']))
+        for e in temp['rate']:
+            flow.idt.append(int(e))
         flow.idt_distro = temp['idt_distro'] if temp.has_key('idt_distro') else '-C'
         flow.trans_duration = int(temp['trans_duration'])
         mesure = mesure_config()
         mesure.metrics.extend(temp['metrics'])
         mesure.sampling_interval = int(temp['sampling_interval'])
         flow.mesure = mesure
+        dump(flow)
         compaign.add_flow(flow)
 
     sender = ''
     receiver = ''
 
     master = Master()
-    print compaign.is_multicast
     results = master.post_compaign_config(compaign)
     global wsock
     json_results = defaultdict(list)

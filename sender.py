@@ -1,9 +1,9 @@
 #!/usr/bin/python
+
 import os
 from subprocess import *
 
 import Pyro4
-
 class Sender(object):
     def __init__(self):
         self.results = []
@@ -30,9 +30,10 @@ class Sender(object):
         for i in flow.idt:
             s += str(i) + " "
         s += flow.ps_distro + " "
-        for i in flow.idt:
+        for i in flow.ps:
             s += str(i) + " "
         s.strip()
+        print s
         return s
 
     def start_compaign_unicast(self):

@@ -80,3 +80,11 @@ hr {
 #rate_ps {
     display: none;
 }
+
+#min_rate_idt {
+    display: none;
+}
+
+#max_rate_idt {
+    display: none;
+}

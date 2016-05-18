@@ -70,12 +70,21 @@
 					<br/>
 				  <div class="form-group">
 				    <label for="source_ip">Source IP</label>
-				    <input type="text" class="form-control" id="source_ip" placeholder="localhost">
+				    <select class="form-control" id="source_ip">
+						  <option value ="192.168.56.1">192.168.56.1</option>
+						  <option value="192.168.56.101">192.168.56.101</option>
+						  <option value="192.168.56.102">192.168.56.102</option>
+						  <option value="192.168.56.103">192.168.56.103</option>
+					 </select>
 				  </div>
 				  <div class="form-group">
 				    <label for="destination_ip">Destination IP</label>
-				    <input type="text" class="form-control" id="destination_ip" placeholder="localhost">
-				  </div>
+                    <select class="form-control" id="destination_ip">
+						  <option value ="192.168.56.1">192.168.56.1</option>
+						  <option value="192.168.56.101">192.168.56.101</option>
+						  <option value="192.168.56.102">192.168.56.102</option>
+						  <option value="192.168.56.103">192.168.56.103</option>
+					 </select>				  </div>
 				  <div class="form-group">
 				    <label for="packet_size">Packet size (bytes)</label>
 				    <input type="text" class="form-control" id="packet_size" placeholder="500">
@@ -97,7 +106,7 @@
 						  <option value="-w">Weibull</option>
 						  <option value="-o">Poisson</option>
 					 </select>
-					<div id = "rate_ps"><br>Rate: &lambda;&nbsp;<input type="text" width="20"/></div>
+					<div id = "rate_ps"><br>Rate: &lambda;&nbsp;<input id = "ra_ps" type="text" width="20"/></div>
 					</div>
 					<div class="form-group">
 				    <label for="idt">Inter-departure time (ms)</label>
@@ -120,6 +129,8 @@
 						  <option value="-V">Pareto</option>
 						  <option value="-O">Poisson</option>
 					 </select>
+					 <div id = "min_rate_idt"><br>Min. rate: &lambda;&nbsp;<input id = "mi_rate_idt" type="text" width="20" /></div>
+					 <div id = "max_rate_idt"><br>Max. rate: &beta;&nbsp;<input id="ma_rate_idt" type="text" width="20"/></div>
 					</div>
 					<label>Metrics</label><br/>
 					<div id="metrics">

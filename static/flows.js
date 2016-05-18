@@ -69,8 +69,8 @@ function LOG(params) {
 function build_flow() {
 	var flow_config = Object();
 
-	var source = $('#source_ip').val();
-	var destination = $("#destination_ip").val();
+	var source = $('#source_ip option:selected').val();
+	var destination = $("#destination_ip option:selected").val();
 
 	if(source == "" || destination == "") {
 		alert("The source and destination ip addresses can\'t be empty.");
@@ -78,19 +78,24 @@ function build_flow() {
 	}
 
 	var protocol =	$('input[name=protocol]:checked').val();
-	console.log(protocol);
+
 
 	var packet_size = $("#packet_size").val();
-	if(!check_param(packet_size)) {
+	var min_rate = $("#mi_rate_idt").val();
+
+	var max_rate = $("#ma_rate_idt").val();
+
+	/*if(!check_param(packet_size)) {
 		alert('invalid packet size');
 		return;
-	}
+	}*/
 
 	var idt = $("#idt").val();
-	if(!check_param(idt)) {
+	var rate = $("#ra_ps").val();
+	/*if(!check_param(idt)) {
 		alert('invalid idt');
 		return;
-	}
+	}*/
 
 	var trans_duration = $("#trans_duration").val();
 	if(!check_param(trans_duration)) {
@@ -116,11 +121,9 @@ function build_flow() {
 	flow_config.source_ip = source;
 	flow_config.destination_ip = destination;
 	flow_config.protocol = protocol;
-	flow_config.packet_size = packet_size;
 	flow_config.trans_duration = trans_duration;
 	flow_config.metrics = metrics;
 	flow_config.sampling_interval = sampling_interval;
-	flow_config.rate = idt;
 	
 	if($("#ps_distro_chkb").is(":checked")){
 		flow_config.ps_distro = $("#ps_distro_select option:selected").val();
@@ -128,7 +131,20 @@ function build_flow() {
 
 	if($("#idt_distro_chkb").is(":checked")){
 		flow_config.idt_distro = $("#idt_distro_select option:selected").val();
+
 	}
+    var tab = [min_rate,max_rate];
+    console.log(flow_config.ps_distro);
+	if (flow_config.ps_distro=='-e')
+	flow_config.packet_size = rate;
+	else
+	flow_config.packet_size =packet_size;
+
+	if (flow_config.idt_distro=='-U')
+	flow_config.rate = tab;
+	else
+	flow_config.rate =idt;
+
 
 
 
@@ -145,17 +161,22 @@ function build_flow() {
 								.html('Source: '+source +' - Destination: '+destination);
 
 	console.log('flow_'+ flowid);
-	console.log(flowid);
+
 
 	var flow_description  = $('<div>').attr('id', 'flow_'+ flowid +'_description')
 										.addClass('collapse flow_description');
-
+    var ps_distro = '';
+    if (flow_config.ps_distro =='-e') ps_distro = 'Exponential';
+    else ps_distro = 'Constant';
+    var idt_distro = '';
+    if (flow_config.idt_distro =='-U') idt_distro = 'Uniform';
+    else idt_distro = 'Constant';
 	var flow_description_html  = '<span class="desc_header">Source IP: </span>' + source + '<br/>';
 	flow_description_html += '<span class="desc_header">Destination IP: </span>' + destination + '<br/>';
 	flow_description_html += '<span class="desc_header">Protocol: </span>' + protocol + '<br/>';
-	flow_description_html += '<span class="desc_header">Pacet size: </span>' + flow_config.ps_distro + '<br/>';
+	flow_description_html += '<span class="desc_header">Pacet size: </span>' + ps_distro + '<br/>';
 	flow_description_html += '<span class="desc_header">lambda: </span>' + packet_size + '<br/>';
-	flow_description_html += '<span class="desc_header">Interdeparture time: </span>' + flow_config.idt_distro + '<br/>';
+	flow_description_html += '<span class="desc_header">Interdeparture time: </span> '+idt_distro+'<br/>';
 	flow_description_html += '<span class="desc_header">lambda: </span>' + idt + '<br/>';
 	flow_description_html += '<span class="desc_header">Transmission duration: </span>' + trans_duration + '<br/>';
 	flow_description_html += '<span class="desc_header">Sampling interval: </span>' + sampling_interval + '<br/>';
@@ -173,6 +194,10 @@ function build_flow() {
 
 	if($("send_config_btn").is(':disabled'))
 		$("send_config_btn").prop('disabled', false);
+
+		$('html, body').animate({
+        scrollTop: $("#flow_list").offset().top
+    }, 500);
 };
 
 // start a new compaign 
@@ -234,11 +259,8 @@ $(document).ready(function() {
         ws.send('first message');
     }
     ws.onmessage = function(evt) {
-        console.log('before unblock');
         $.unblockUI();
-        console.log('after unblock');
         var msg = JSON.parse(evt.data);
-        console.log(msg);
 
         for (var key in msg) {
             $('#graphs').append('<header class="h2 text-center"> flow id: '+key+'</header>');
@@ -322,17 +344,40 @@ $("#ps_distro_chkb").click( function(){
     }
 
    else
-   ('#ps_distro_select').prop('disabled', true);
+   $('#ps_distro_select').prop('disabled', true);
+});
+
+$("#idt_distro_chkb").click( function(){
+    if( $(this).is(':checked') )
+    {
+        $('#idt_distro_select').prop('disabled', false);
+    }
+
+   else
+   $('#idt_distro_select').prop('disabled', true);
 });
 
 
-$( "select" )
+$( "#ps_distro_select" )
   .change(function () {
     var str = "";
     $( "select option:selected" ).each(function() {
       if($( this ).text() == "Exponential")
       {
         $('#rate_ps').fadeIn("slow");
+      }
+    });
+  })
+  .change();
+
+  $( "#idt_distro_select" )
+  .change(function () {
+    var str = "";
+    $( "select option:selected" ).each(function() {
+      if($( this ).text() == "Uniform")
+      {
+        $('#min_rate_idt').fadeIn("slow");
+        $('#max_rate_idt').fadeIn("slow");
       }
     });
   })
