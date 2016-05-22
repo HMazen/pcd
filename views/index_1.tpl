@@ -189,8 +189,10 @@
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
 	<script type="text/javascript" src="{{ url('static', filename='jquery-2.2.2.js') }}"></script>
 	<script type="text/javascript" src="{{ url('static', filename='utilities.js') }}"></script>
+	<!-- <script src="../static/utilities.js"></script> -->
 	<script type="text/javascript" src="{{ url('static', filename='jquery.blockUI.js') }}"></script>
 	<script type="text/javascript" src="{{ url('static', filename='flows.js') }}"></script>
+	<!-- <script src="../static/flows.js"></script> -->
 	<script type="text/javascript" src="{{ url('static', filename='highcharts.js') }}"></script>
 
 </body>

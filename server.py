@@ -27,6 +27,10 @@ db_path = 'data.db'
 app = bottle.default_app()
 wsock = None
 
+from bottle import SimpleTemplate
+
+SimpleTemplate.defaults["get_url"] = app.get_url
+
 is_authenticate = False
 
 aaa = Cork('/var/lib/shinken/modules/pcd/views')
