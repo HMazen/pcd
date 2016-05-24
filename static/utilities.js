@@ -82,3 +82,37 @@ function load_compaign_names() {
 
 	
 }
+
+function show_relevant_options(slc) {
+	var selector = "#"+slc+"_distro_params";
+	switch($("#"+slc+"_distro_select option:selected").text()) {
+		case 'Exponential': $(selector+" #expo_params").fadeIn(300); break;
+		case 'Uniform': 	$(selector+" #uniform_params").fadeIn(300); break;
+		case 'Gamma': 		$(selector+" #gamma_params").fadeIn(300); break;
+		case 'Poisson': 	$(selector+" #poisson_params").fadeIn(300); break;
+		case 'Cauchy': 		$(selector+" #cauchy_params").fadeIn(300); break;
+		case 'Weibull': 	$(selector+" #weibull_params").fadeIn(300); break;
+		case 'Pareto':  	$(selector+" #pareto_params").fadeIn(300); break;
+		case 'Normal':  	$(selector+" #normal_params").fadeIn(300); break;
+		default: break;
+	}
+}
+
+
+function get_parameters_for_distro(slc) {
+	var selector = "#"+slc+"_distro_params";
+	var params = Object();
+	switch($("#"+slc+"_distro_select option:selected").text()) {
+		case 'Exponential': params['Exponential'] = {'mean_rate' : $(selector+" #expo_mean").val()}; break;
+		case 'Uniform': 	params['Uniform'] = {'min_rate' : $(selector+" #uniform_min_rate").val(), 'max_rate': $(selector+" #uniform_max_rate").val()}; break;
+		case 'Gamma': 		params['Gamma'] = {'shape' : $(selector+" #gamma_shape").val(), 'scale' : $(selector+" #gamma_scale").val()}; break;
+		case 'Poisson': 	params['Poisson'] = {'mean': $(selector+" #poisson_mean").val()}; break;
+		case 'Cauchy': 		params['Cauchy'] = {'shape' : $(selector+" #cauchy_shape").val(), 'scale' : $(selector+" #chauchy_scale").val()}; break;
+		case 'Weibull': 	params['Weibull'] = {'shape' : $(selector+" #weibull_shape").val(), 'scale' : $(selector+" #weibull_scale").val()}; break;
+		case 'Pareto':  	params['Pareto'] = {'shape' : $(selector+" #pareto_shape").val(), 'scale': $(selector+" #pareto_scale").val()}; break;
+		case 'Normal':  	params['Normal'] = {'sigma' : $(selector+" #normal_sigma").val(), 'mu' : $(selector+" #normal_mu").val()}; break;
+		default: break;
+	}
+
+	return params;
+}

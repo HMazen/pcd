@@ -124,27 +124,17 @@ function build_flow() {
 	flow_config.trans_duration = trans_duration;
 	flow_config.metrics = metrics;
 	flow_config.sampling_interval = sampling_interval;
-	
-	if($("#ps_distro_chkb").is(":checked")){
-		flow_config.ps_distro = $("#ps_distro_select option:selected").val();
+	if($("#ps_distro_chkb").is(":checked")) {
+		flow_config.ps_params = get_parameters_for_distro("ps");
+	} else {
+		flow_config.ps_params = {'Constant' : $("#packet_size").val()};
 	}
 
-	if($("#idt_distro_chkb").is(":checked")){
-		flow_config.idt_distro = $("#idt_distro_select option:selected").val();
-
+	if($("#idt_distro_chkb").is(":checked")) {
+		flow_config.idt_params = get_parameters_for_distro("idt");
+	} else {
+		flow_config.idt_params = {'Constant' : $("#idt").val()};
 	}
-    var tab = [min_rate,max_rate];
-    console.log(flow_config.ps_distro);
-	if (flow_config.ps_distro=='-e')
-	flow_config.packet_size = [rate];
-	else
-	flow_config.packet_size =[packet_size];
-
-	if (flow_config.idt_distro=='-U')
-	flow_config.rate = tab;
-	else
-	flow_config.rate =[idt];
-
 
 
 
@@ -165,18 +155,13 @@ function build_flow() {
 
 	var flow_description  = $('<div>').attr('id', 'flow_'+ flowid +'_description')
 										.addClass('collapse flow_description');
-    var ps_distro = '';
-    if (flow_config.ps_distro =='-e') ps_distro = 'Exponential';
-    else ps_distro = 'Constant';
-    var idt_distro = '';
-    if (flow_config.idt_distro =='-U') idt_distro = 'Uniform';
-    else idt_distro = 'Constant';
+
 	var flow_description_html  = '<span class="desc_header">Source IP: </span>' + source + '<br/>';
 	flow_description_html += '<span class="desc_header">Destination IP: </span>' + destination + '<br/>';
 	flow_description_html += '<span class="desc_header">Protocol: </span>' + protocol + '<br/>';
-	flow_description_html += '<span class="desc_header">Pacet size: </span>' + ps_distro + '<br/>';
+	flow_description_html += '<span class="desc_header">Pacet size: </span>' + flow_config.ps_params + '<br/>';
 	flow_description_html += '<span class="desc_header">lambda: </span>' + packet_size + '<br/>';
-	flow_description_html += '<span class="desc_header">Interdeparture time: </span> '+idt_distro+'<br/>';
+	flow_description_html += '<span class="desc_header">Interdeparture time: </span> '+flow_config.idt_params+'<br/>';
 	flow_description_html += '<span class="desc_header">lambda: </span>' + idt + '<br/>';
 	flow_description_html += '<span class="desc_header">Transmission duration: </span>' + trans_duration + '<br/>';
 	flow_description_html += '<span class="desc_header">Sampling interval: </span>' + sampling_interval + '<br/>';
@@ -214,12 +199,13 @@ function new_compaign() {
 	}
 
 	var compaign_id = $("#compaign_name").val();
+	if(!compaign_id) { alert('Nigga y u no provide a compaign name?'); return; };
 	$("#compaign_name").val('');
 
-	/*if(check_compaign_name(compaign_id)) {
+	if(check_compaign_name(compaign_id)) {
 		alert('Invalid compaign name');
 		return;
-	}*/
+	}
 
 	compaigns[compaign_id] = [];
 	current_compaign = compaign_id;
@@ -337,51 +323,70 @@ $(document).ready(function() {
         return false;
     });*/
 
-$("#ps_distro_chkb").click( function(){
-    if( $(this).is(':checked') )
-    {
-        $('#ps_distro_select').prop('disabled', false);
-    }
+	$("#ps_distro_chkb").click( function(){
+	    if( $(this).is(':checked') )
+	    {
+	        $('#ps_distro_select').prop('disabled', false);
+	    }
 
-   else
-   $('#ps_distro_select').prop('disabled', true);
-});
+	   else
+	   $('#ps_distro_select').prop('disabled', true);
+	});
 
-$("#idt_distro_chkb").click( function(){
-    if( $(this).is(':checked') )
-    {
-        $('#idt_distro_select').prop('disabled', false);
-    }
+	$("#idt_distro_chkb").click( function(){
+	    if( $(this).is(':checked') ) {
+	        $('#idt_distro_select').prop('disabled', false);
+	    } else
+	   		$('#idt_distro_select').prop('disabled', true);
+	});
 
-   else
-   $('#idt_distro_select').prop('disabled', true);
-});
+	// HIDE PS DISTRO ELEMENTS
+	$("#ps_distro_params").children().each(function(){
+		$(this).hide();
+	});
+
+	// HIDE IDT DISTRO ELEMENTS
+	$("#idt_distro_params").children().each(function(){
+		$(this).hide();
+	});
 
 
-$( "#ps_distro_select" )
-  .change(function () {
-    var str = "";
-    $( "select option:selected" ).each(function() {
-      if($( this ).text() == "Exponential")
-      {
-        $('#rate_ps').fadeIn("slow");
-      }
-    });
-  })
-  .change();
+	$("#ps_distro_select").change(function(){
+		$("#ps_distro_params").children().each(function(){
+				$(this).hide();
+		});
+		show_relevant_options("ps");
+	});
 
-  $( "#idt_distro_select" )
-  .change(function () {
-    var str = "";
-    $( "select option:selected" ).each(function() {
-      if($( this ).text() == "Uniform")
-      {
-        $('#min_rate_idt').fadeIn("slow");
-        $('#max_rate_idt').fadeIn("slow");
-      }
-    });
-  })
-  .change();
+	$("#idt_distro_select").change(function(){
+		$("#idt_distro_params").children().each(function(){
+				$(this).hide();
+		});
+		show_relevant_options("idt");
+	});
+
+
+	$("#ps_distro_chkb").change(function() {
+		console.log('ps distro changed');
+		if($(this).is(':checked')) {
+			show_relevant_options("ps");
+		} else {
+			$("#ps_distro_params").children().each(function(){
+				$(this).hide();
+			});
+		}
+	});
+
+	$("#idt_distro_chkb").change(function() {
+		console.log('ps distro changed');
+		if($(this).is(':checked')) {
+			show_relevant_options("idt");
+		} else {
+			$("#idt_distro_params").children().each(function(){
+				$(this).hide();
+			});
+		}
+	});
 
 
 	// initialise interface

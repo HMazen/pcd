@@ -20,8 +20,8 @@
 			</header>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav">
-					<li><a href="#">Compaigns</a></li>
-					<li><a href="#">Results</a></li>
+					<li><a href="#compaings">Compaigns</a></li>
+					<li><a href="#results">Results</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
                 <li><a href="/logout">Logout</a></li>
@@ -32,7 +32,7 @@
 
 	<div class="container col-md-8 col-md-offset-2">
 		
-		<header class="text-center h1">New Compaign</header>
+		<header class="text-center h1"><a name="compaigns">New Compaign</a></header>
 		<br/><br/>
 
 		<div class="row">
@@ -77,20 +77,25 @@
 						  <option value="192.168.56.103">192.168.56.103</option>
 					 </select>
 				  </div>
-				  <div class="form-group">
+
+
+				 <div class="form-group">
 				    <label for="destination_ip">Destination IP</label>
                     <select class="form-control" id="destination_ip">
 						  <option value ="192.168.56.1">192.168.56.1</option>
 						  <option value="192.168.56.101">192.168.56.101</option>
 						  <option value="192.168.56.102">192.168.56.102</option>
 						  <option value="192.168.56.103">192.168.56.103</option>
-					 </select>				  </div>
+					 </select>				  
+				</div>
+
+
 				  <div class="form-group">
 				    <label for="packet_size">Packet size (bytes)</label>
 				    <input type="text" class="form-control" id="packet_size" placeholder="500">
 				  </div>
 				  <label>Use PS distrobution</label>
-				  <div class="checkbox" >
+				 <div class="checkbox" >
 					  <label>
 					    <input type="checkbox" id="ps_distro_chkb" value="">
 						Enable		
@@ -106,12 +111,55 @@
 						  <option value="-w">Weibull</option>
 						  <option value="-o">Poisson</option>
 					 </select>
-					<div id = "rate_ps"><br>Rate: &lambda;&nbsp;<input id = "ra_ps" type="text" width="20"/></div>
-					</div>
+
+					<div id="ps_distro_params">
+						<div id = "expo_params">
+							<br>Mean rate &lambda;&nbsp;<input id = "expo_mean_rate" type="text" width="20"/>
+						</div>
+
+						<div id = "gamma_params">
+							<br>Shape &alpha;&nbsp;<input id = "gamma_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "gamma_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "uniform_params">
+							<br>Min rate &alpha;&nbsp;<input id = "uniform_min_rate" type="text" placeholder="500" width="20"/>
+							<br>Max rate &beta;&nbsp;<input id = "uniform_max_rate" type="text" placeholder="1000" width="20"/>
+						</div>
+
+						<div id = "cauchy_params">
+							<br>Shape &alpha;&nbsp;<input id = "cauchy_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "cauchy_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "normal_params">
+							<br>Std. dev. &sigma;&nbsp;<input id = "normal_sigma" type="text" width="20"/>
+							<br>Mean &mu;&nbsp;<input id = "normal_mu" type="text" width="20"/>
+						</div>
+
+						<div id = "poisson_params">
+							<br>Mean &lambda;&nbsp;<input id = "poisson_mean" type="text" width="20"/>
+						</div>
+
+						<div id = "pareto_params">
+							<br>Shape &alpha;&nbsp;<input id = "pareto_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "pareto_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "weibull_params">
+							<br>Shape &alpha;&nbsp;<input id = "weibull_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "weibull_scale" type="text" width="20"/>
+						</div>
+
+					</div> <!-- ============================== PACKET SIZE DISTRO PARAMETERS -->
+
+				</div>
+
+
 					<div class="form-group">
-				    <label for="idt">Inter-departure time (ms)</label>
-				    <input type="text" class="form-control" id="idt" placeholder="50">
-				  </div>
+				    	<label for="idt">Inter-departure time (ms)</label>
+				    	<input type="text" class="form-control" id="idt" placeholder="50">
+				 	 </div>
 
 				  <label>Use IDT distrobution</label>
 				  <div class="checkbox">
@@ -129,8 +177,49 @@
 						  <option value="-V">Pareto</option>
 						  <option value="-O">Poisson</option>
 					 </select>
-					 <div id = "min_rate_idt"><br>Min. rate: &lambda;&nbsp;<input id = "mi_rate_idt" type="text" width="20" /></div>
-					 <div id = "max_rate_idt"><br>Max. rate: &beta;&nbsp;<input id="ma_rate_idt" type="text" width="20"/></div>
+					 
+					 <div id="idt_distro_params">
+						<div id = "expo_params">
+							<br>Mean rate &lambda;&nbsp;<input id = "expo_mean_rate" type="text" width="20"/>
+						</div>
+
+						<div id = "gamma_params">
+							<br>Shape &alpha;&nbsp;<input id = "gamma_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;<input id = "gamma_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "uniform_params">
+							<br>Min rate &alpha;&nbsp;<input id = "uniform_min_rate" type="text" placeholder="500" width="20"/>
+							<br>Max rate &beta;&nbsp;<input id = "uniform_max_rate" type="text" placeholder="1000" width="20"/>
+						</div>
+
+						<div id = "normal_params">
+							<br>Std. dev. &sigma;&nbsp;<input id = "normal_sigma" type="text" width="20"/>
+							<br>Mean &mu;&nbsp;<input id = "normal_mu" type="text" width="20"/>
+						</div>
+
+						<div id = "poisson_params">
+							<br>Mean &lambda;&nbsp;<input id = "poisson_mean" type="text" width="20"/>
+						</div>
+
+						<div id = "cauchy_params">
+							<br>Shape &alpha;&nbsp;<input id = "cauchy_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "cauchy_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "pareto_params">
+							<br>Shape &alpha;&nbsp;<input id = "pareto_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "pareto_scale" type="text" width="20"/>
+						</div>
+
+						<div id = "weibull_params">
+							<br>Shape &alpha;&nbsp;<input id = "weibull_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "weibull_scale" type="text" width="20"/>
+						</div>
+
+					</div> <!-- ============================== INTERDEPARTURE TIME DISTRO PARAMETERS -->
+
+
 					</div>
 					<label>Metrics</label><br/>
 					<div id="metrics">
@@ -180,7 +269,7 @@
 		<hr>
 		<br/>
 		<div class="row" id="graphs">
-			<header class="h1 text-center">Compaign Results</header>
+			<header class="h1 text-center"><a name="results">Compaign Results</a></header>
 		</div>
 
 	</div>
