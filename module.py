@@ -1,12 +1,9 @@
 import multiprocessing
-import os
 from subprocess import Popen, PIPE, check_output
 
-import bottle
 from shinken.basemodule import BaseModule
 from shinken.log import logger
 
-bottle.TEMPLATE_PATH.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "views")))
 properties = {
 	'daemons' : ['arbiter'],
 	'type' : 'pcd',
@@ -19,17 +16,10 @@ def job():
     err = ""
     try:
         logger.info('********** job method *********')
-        p = Popen(['python', '/var/lib/shinken/modules/pcd/server.py'], stdout=PIPE, stderr=PIPE)
-        out = p.stdout.readline()
-        while True:
-            if out:
-                logger.info("---------------------------" + out)
-            out = p.stdout.readline()
-        (str, err) = p.communicate()
-        logger.info("---------------------------" + str + "     " + err)
+        p = Popen(['python', '/var/lib/shinken/modules/pcd/web_server/server.py'], stdout=PIPE, stderr=PIPE)
+        p.communicate()
     except Exception as e:
         logger.info('job: ' + str(e))
-        logger.info("||||||||||||||||||||||" + str + "     " + err)
 
 
 def get_instance(plugin):
@@ -41,7 +31,6 @@ def get_instance(plugin):
 
 class pcd_module_class(BaseModule):
     def __init__(self, modconf):
-        self.master = None
         self.proc = None
         BaseModule.__init__(self, modconf)
 
@@ -66,14 +55,13 @@ class pcd_module_class(BaseModule):
         except Exception as e:
             logger.info('hook_early_config: ' + str(e))
 
-
     def main(self):
         try:
             proc = multiprocessing.Process(target=job)
             proc.start()
             proc.join()
         except Exception as e:
-            logger.info('main: ' + str(e))
+            logger.info('/////////////////////main: ' + str(e))
 
     def stop_process(self):
         logger.info('********* before leaving stop_process *********')

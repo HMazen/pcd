@@ -103,11 +103,11 @@ function get_parameters_for_distro(slc) {
 	var selector = "#"+slc+"_distro_params";
 	var params = Object();
 	switch($("#"+slc+"_distro_select option:selected").text()) {
-		case 'Exponential': params['Exponential'] = {'mean_rate' : $(selector+" #expo_mean").val()}; break;
+		case 'Exponential': params['Exponential'] = {'mean_rate' : $(selector+" #expo_mean_rate").val()}; break;
 		case 'Uniform': 	params['Uniform'] = {'min_rate' : $(selector+" #uniform_min_rate").val(), 'max_rate': $(selector+" #uniform_max_rate").val()}; break;
 		case 'Gamma': 		params['Gamma'] = {'shape' : $(selector+" #gamma_shape").val(), 'scale' : $(selector+" #gamma_scale").val()}; break;
 		case 'Poisson': 	params['Poisson'] = {'mean': $(selector+" #poisson_mean").val()}; break;
-		case 'Cauchy': 		params['Cauchy'] = {'shape' : $(selector+" #cauchy_shape").val(), 'scale' : $(selector+" #chauchy_scale").val()}; break;
+		case 'Cauchy': 		params['Cauchy'] = {'shape' : $(selector+" #cauchy_shape").val(), 'scale' : $(selector+" #cauchy_scale").val()}; break;
 		case 'Weibull': 	params['Weibull'] = {'shape' : $(selector+" #weibull_shape").val(), 'scale' : $(selector+" #weibull_scale").val()}; break;
 		case 'Pareto':  	params['Pareto'] = {'shape' : $(selector+" #pareto_shape").val(), 'scale': $(selector+" #pareto_scale").val()}; break;
 		case 'Normal':  	params['Normal'] = {'sigma' : $(selector+" #normal_sigma").val(), 'mu' : $(selector+" #normal_mu").val()}; break;

@@ -3,7 +3,10 @@ var compaigns = Object();		// associative array for compaign-flows
 var unsaved_compaign = false;
 var flowid = 0;
 
-var _url = "/start_compaign";
+
+
+
+var _url = "/send_config";
 
 // push compaign config to server
 function send_config() {
@@ -25,8 +28,8 @@ function send_config() {
 			console.log('could not send config');
 		}
 	});
-	$.blockUI({ message: '<h3 style="color:#3366CC"><img style="height:120px;" src="static/loading2.gif"  />Waiting for results</h3>' });
-
+	//$.blockUI({ message: '<h3 style="color:#3366CC"><img style="height:120px;" src="static/loading2.gif"  />Waiting for results</h3>' });
+    $('#myPleaseWait').modal('show');
 }
 
 // load past compaigns configs from server
@@ -80,23 +83,6 @@ function build_flow() {
 	var protocol =	$('input[name=protocol]:checked').val();
 
 
-	var packet_size = $("#packet_size").val();
-	var min_rate = $("#mi_rate_idt").val();
-
-	var max_rate = $("#ma_rate_idt").val();
-
-	/*if(!check_param(packet_size)) {
-		alert('invalid packet size');
-		return;
-	}*/
-
-	var idt = $("#idt").val();
-	var rate = $("#ra_ps").val();
-	/*if(!check_param(idt)) {
-		alert('invalid idt');
-		return;
-	}*/
-
 	var trans_duration = $("#trans_duration").val();
 	if(!check_param(trans_duration)) {
 		alert('invalid trans duration');
@@ -117,6 +103,11 @@ function build_flow() {
 		}
 	});
 
+	if (metrics.length == 0)
+	{
+		alert('you must choose at least one metric');
+		return;
+	}
 	flow_config.date = Date();
 	flow_config.source_ip = source;
 	flow_config.destination_ip = destination;
@@ -137,9 +128,6 @@ function build_flow() {
 	}
 
 
-
-
-	console.log(flow_config);
 	append_flow(flow_config);
 
 	if($('#send_config_btn').is('disabled'))
@@ -150,27 +138,49 @@ function build_flow() {
 								.addClass('btn btn-block')
 								.html('Source: '+source +' - Destination: '+destination);
 
-	console.log('flow_'+ flowid);
-
-
 	var flow_description  = $('<div>').attr('id', 'flow_'+ flowid +'_description')
 										.addClass('collapse flow_description');
+    
+    ps_param = '';
+
+	for (var key in flow_config.ps_params)
+	{
+		if (key == 'Constant')
+		ps_param += flow_config.ps_params[key] + ', ';
+		else
+		for (var k in flow_config.ps_params[key])
+		{
+			ps_param += k +': '+flow_config.ps_params[key][k] + ', ';
+		}
+	}
+
+	idt_param = '';
+	for (var key in flow_config.idt_params)
+	{
+		if (key == 'Constant')
+		idt_param += flow_config.idt_params[key] + ', ';
+		else
+		for (var k in flow_config.idt_params[key])
+		{
+			idt_param += k +': '+flow_config.idt_params[key][k] + ', ';
+		}
+	}
+
+	ps_param = ps_param.substring(0, ps_param.length - 2);
+	idt_param = idt_param.substring(0, idt_param.length - 2);
 
 	var flow_description_html  = '<span class="desc_header">Source IP: </span>' + source + '<br/>';
 	flow_description_html += '<span class="desc_header">Destination IP: </span>' + destination + '<br/>';
 	flow_description_html += '<span class="desc_header">Protocol: </span>' + protocol + '<br/>';
-	flow_description_html += '<span class="desc_header">Pacet size: </span>' + flow_config.ps_params + '<br/>';
-	flow_description_html += '<span class="desc_header">lambda: </span>' + packet_size + '<br/>';
-	flow_description_html += '<span class="desc_header">Interdeparture time: </span> '+flow_config.idt_params+'<br/>';
-	flow_description_html += '<span class="desc_header">lambda: </span>' + idt + '<br/>';
+	flow_description_html += '<span class="desc_header">Packet size: </span>' + Object.keys(flow_config.ps_params)[0] + '<br/>';
+	flow_description_html += '<span class="desc_header">Packet size parameters: </span>' + ps_param + '<br/>';
+	flow_description_html += '<span class="desc_header">Interdeparture time: </span> '+Object.keys(flow_config.idt_params)[0]+'<br/>';
+	flow_description_html += '<span class="desc_header">Interdeparture time parameters: </span>' + idt_param + '<br/>';
 	flow_description_html += '<span class="desc_header">Transmission duration: </span>' + trans_duration + '<br/>';
 	flow_description_html += '<span class="desc_header">Sampling interval: </span>' + sampling_interval + '<br/>';
 
 
 	flow_description.html(flow_description_html);
-
-	console.log(flow_description.html());
-	console.log('appending flow button');
 
 	$("#flow_list").append(flow_entry);
 	$("#flow_list").append(flow_description);
@@ -190,7 +200,6 @@ function new_compaign() {
 	if(unsaved_compaign) {
 		// prompt user to either drop or save the compaign
 		if(confirm('Are you sure to discard the current config?')) {
-			console.log('dropped current compaign');			
 			drop_current_compaign();
 			initialize_ui();
 			if($('#compaign_name').val() == '') return;
@@ -199,7 +208,7 @@ function new_compaign() {
 	}
 
 	var compaign_id = $("#compaign_name").val();
-	if(!compaign_id) { alert('Nigga y u no provide a compaign name?'); return; };
+	if(!compaign_id) { alert('You didn\'t provide a compaign name'); return; };
 	$("#compaign_name").val('');
 
 	if(check_compaign_name(compaign_id)) {
@@ -227,25 +236,18 @@ function drop_current_compaign() {						//=================== DROP CURRENT COMPA
 
 
 $(document).ready(function() {
-	// INITIALIZE WEBSOCKET
-	 if (!window.WebSocket) {
-        if (window.MozWebSocket) {
-            window.WebSocket = window.MozWebSocket;
-        } else {
-            $('#messages').append("<li>Your browser doesn't support WebSockets.</li>");
-        }
-    }
 
+var checkboxes = $( ':checkbox' );
+    checkboxes.prop( 'checked', false );
 
-
-    ws = new WebSocket('ws://localhost:8081/websocket');
+   ws = new WebSocket("ws://localhost:5000/websocket");
 
     ws.onopen = function(evt) {
         console.log('socket opened');
         ws.send('first message');
     }
     ws.onmessage = function(evt) {
-        $.unblockUI();
+        $('#myPleaseWait').modal('hide');
         var msg = JSON.parse(evt.data);
 
         for (var key in msg) {
@@ -263,7 +265,7 @@ $(document).ready(function() {
 		},
 		xAxis : {
 			title : {
-				text : '<b>time (s)</b>'
+				text : '<b>time ('+ entry.unit +')</b>'
 			},
 			categories: entry.AxeX,
 
@@ -280,7 +282,7 @@ $(document).ready(function() {
 		},
 		 tooltip: {
             headerFormat: '<b>{series.name}</b><br>',
-            pointFormat: '{point.y} s'
+            pointFormat: '{point.y} '+entry.unit
         },
         plotOptions: {
             series: {

@@ -1,26 +1,47 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>bootstrap</title>
+	<title>TGPM Module</title>
 	<meta http-equiv="X-UA-Compatible" content="IE=edge" charset="utf-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
-	<link rel="stylesheet" type="text/css" href="{{ url('static', filename='styles.css') }}">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 
-	<!--<link rel="stylesheet" type="text/css" href="/static/styles.css">-->
 </head>
 <body>
+<!-- Modal Start here-->
+<div class="modal fade bs-example-modal-sm" id="myPleaseWait" tabindex="-1"
+	 role="dialog" aria-hidden="true" data-backdrop="static">
+	<div class="modal-dialog modal-sm">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h4 class="modal-title">
+                    <span class="glyphicon glyphicon-time">
+                    </span>Please Wait
+				</h4>
+			</div>
+			<div class="modal-body">
+				<div class="progress">
+					<div class="progress-bar progress-bar-info
+                    progress-bar-striped active"
+						 style="width: 100%">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<!-- Modal ends Here -->
 
 	<!-- navbar declarartion -->
 	<nav class="navbar navbar-default">
 		<div class="container">
 			<header class="navbar-header">
-				<a href="#" class="navbar-brand">TrafficGen</a>
+				<a href="{{ url_for('start_compaign') }}" class="navbar-brand">TrafficGen</a>
 			</header>
 			<div class="collapse navbar-collapse">
 				<ul class="nav navbar-nav">
-					<li><a href="#compaings">Compaigns</a></li>
 					<li><a href="#results">Results</a></li>
 				</ul>
 				<ul class="nav navbar-nav navbar-right">
@@ -38,7 +59,7 @@
 		<div class="row">
 			<div class="text-center col-md-6 col-md-offset-3">
 				<label for="compaign_name">Enter the compaign name</label>
-				<input id="compaign_name" class="form-control" placeholder="compaign name"></input><br/>
+				<input id="compaign_name" class="form-control" placeholder="compaign name"/><br/>
 				<button id="new_compaign_btn" class="btn btn-info btn-md btn-block">Start compaign</button><br/>
 				<button id="load_compaign_btn" class="btn btn-success btn-md btn-block">Load Compaign</button>
 			</div>
@@ -63,7 +84,7 @@
 					</div>
 					<div class="radio">
 					  <label>
-					    <input type="radio" name="protocol" id="optionsRadios2" value="Multicast">
+						  <input type="radio" name="protocol" id="optionsRadios3" value="Multicast">
 					    UDP Multicast
 					  </label>
 					</div>
@@ -92,7 +113,8 @@
 
 				  <div class="form-group">
 				    <label for="packet_size">Packet size (bytes)</label>
-				    <input type="text" class="form-control" id="packet_size" placeholder="500">
+					  <input type="text" pattern="[0-9]+" title="Only numbers are allowed" class="form-control"
+							 id="packet_size" placeholder="500" required>
 				  </div>
 				  <label>Use PS distrobution</label>
 				 <div class="checkbox" >
@@ -114,41 +136,56 @@
 
 					<div id="ps_distro_params">
 						<div id = "expo_params">
-							<br>Mean rate &lambda;&nbsp;<input id = "expo_mean_rate" type="text" width="20"/>
+							<br>Mean rate &lambda;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															   id="expo_mean_rate" type="text" width="20"/>
 						</div>
 
 						<div id = "gamma_params">
-							<br>Shape &alpha;&nbsp;<input id = "gamma_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "gamma_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="gamma_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="gamma_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "uniform_params">
-							<br>Min rate &alpha;&nbsp;<input id = "uniform_min_rate" type="text" placeholder="500" width="20"/>
-							<br>Max rate &beta;&nbsp;<input id = "uniform_max_rate" type="text" placeholder="1000" width="20"/>
+							<br>Min rate &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															 id="uniform_min_rate" type="text" placeholder="500"
+															 width="20"/>
+							<br>Max rate &beta;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															id="uniform_max_rate" type="text" placeholder="1000"
+															width="20"/>
 						</div>
 
 						<div id = "cauchy_params">
-							<br>Shape &alpha;&nbsp;<input id = "cauchy_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "cauchy_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="cauchy_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="cauchy_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "normal_params">
-							<br>Std. dev. &sigma;&nbsp;<input id = "normal_sigma" type="text" width="20"/>
-							<br>Mean &mu;&nbsp;<input id = "normal_mu" type="text" width="20"/>
+							<br>Std. dev. &sigma;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															  id="normal_sigma" type="text" width="20"/>
+							<br>Mean &mu;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed" id="normal_mu"
+													  type="text" width="20"/>
 						</div>
 
 						<div id = "poisson_params">
-							<br>Mean &lambda;&nbsp;<input id = "poisson_mean" type="text" width="20"/>
+							<br>Mean &lambda;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="poisson_mean" type="text" width="20"/>
 						</div>
 
 						<div id = "pareto_params">
-							<br>Shape &alpha;&nbsp;<input id = "pareto_shape" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="pareto_shape" type="text" width="20"/>
 							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "pareto_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "weibull_params">
-							<br>Shape &alpha;&nbsp;<input id = "weibull_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "weibull_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="weibull_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="weibull_scale" type="text" width="20"/>
 						</div>
 
 					</div> <!-- ============================== PACKET SIZE DISTRO PARAMETERS -->
@@ -158,13 +195,15 @@
 
 					<div class="form-group">
 				    	<label for="idt">Inter-departure time (ms)</label>
-				    	<input type="text" class="form-control" id="idt" placeholder="50">
+						<input pattern="[0-9]+" title="Only numbers are allowed" type="text" class="form-control"
+							   id="idt" placeholder="50">
 				 	 </div>
 
 				  <label>Use IDT distrobution</label>
 				  <div class="checkbox">
 					  <label>
-					    <input type="checkbox" id="idt_distro_chkb" value="">
+						  <input pattern="[0-9]+" title="Only numbers are allowed" type="checkbox" id="idt_distro_chkb"
+								 value="">
 						Enable
 					  </label>
 					  <br><br>
@@ -180,41 +219,57 @@
 					 
 					 <div id="idt_distro_params">
 						<div id = "expo_params">
-							<br>Mean rate &lambda;&nbsp;<input id = "expo_mean_rate" type="text" width="20"/>
+							<br>Mean rate &lambda;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															   id="expo_mean_rate" type="text" width="20"/>
 						</div>
 
 						<div id = "gamma_params">
-							<br>Shape &alpha;&nbsp;<input id = "gamma_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;<input id = "gamma_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="gamma_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															   id="gamma_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "uniform_params">
-							<br>Min rate &alpha;&nbsp;<input id = "uniform_min_rate" type="text" placeholder="500" width="20"/>
-							<br>Max rate &beta;&nbsp;<input id = "uniform_max_rate" type="text" placeholder="1000" width="20"/>
+							<br>Min rate &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															 id="uniform_min_rate" type="text" placeholder="500"
+															 width="20"/>
+							<br>Max rate &beta;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															id="uniform_max_rate" type="text" placeholder="1000"
+															width="20"/>
 						</div>
 
 						<div id = "normal_params">
-							<br>Std. dev. &sigma;&nbsp;<input id = "normal_sigma" type="text" width="20"/>
-							<br>Mean &mu;&nbsp;<input id = "normal_mu" type="text" width="20"/>
+							<br>Std. dev. &sigma;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+															  id="normal_sigma" type="text" width="20"/>
+							<br>Mean &mu;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed" id="normal_mu"
+													  type="text" width="20"/>
 						</div>
 
 						<div id = "poisson_params">
-							<br>Mean &lambda;&nbsp;<input id = "poisson_mean" type="text" width="20"/>
+							<br>Mean &lambda;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="poisson_mean" type="text" width="20"/>
 						</div>
 
 						<div id = "cauchy_params">
-							<br>Shape &alpha;&nbsp;<input id = "cauchy_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "cauchy_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="cauchy_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="cauchy_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "pareto_params">
-							<br>Shape &alpha;&nbsp;<input id = "pareto_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "pareto_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="pareto_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="pareto_scale" type="text" width="20"/>
 						</div>
 
 						<div id = "weibull_params">
-							<br>Shape &alpha;&nbsp;<input id = "weibull_shape" type="text" width="20"/>
-							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input id = "weibull_scale" type="text" width="20"/>
+							<br>Shape &alpha;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+														  id="weibull_shape" type="text" width="20"/>
+							<br>Scale &beta;&nbsp;&nbsp;&nbsp;<input pattern="[0-9]+" title="Only numbers are allowed"
+																	 id="weibull_scale" type="text" width="20"/>
 						</div>
 
 					</div> <!-- ============================== INTERDEPARTURE TIME DISTRO PARAMETERS -->
@@ -243,10 +298,12 @@
 						 <br/><br/>
 						 <div class="form-group">
 					    <label for="sample_interval">Sampling interval (ms)</label>
-					    <input type="text" class="form-control" id="sample_interval" placeholder="100ms">
+							 <input type="text" pattern="[0-9]+" title="Only numbers are allowed" class="form-control"
+									id="sample_interval" placeholder="100ms">
 
 					    <label for="trans_duration">Duration (s)</label>
-					    <input type="text" class="form-control" id="trans_duration" placeholder="1min">
+							 <input type="text" pattern="[0-9]+" title="Only numbers are allowed" class="form-control"
+									id="trans_duration" placeholder="1min">
 				  	</div>
 				  		
 				  	
@@ -274,15 +331,13 @@
 
 	</div>
 
+
+<script type="text/javascript" src="{{ url_for('static', filename='jquery-2.2.2.js') }}"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
-	<script type="text/javascript" src="{{ url('static', filename='jquery-2.2.2.js') }}"></script>
-	<script type="text/javascript" src="{{ url('static', filename='utilities.js') }}"></script>
-	<!-- <script src="../static/utilities.js"></script> -->
-	<script type="text/javascript" src="{{ url('static', filename='jquery.blockUI.js') }}"></script>
-	<script type="text/javascript" src="{{ url('static', filename='flows.js') }}"></script>
-	<!-- <script src="../static/flows.js"></script> -->
-	<script type="text/javascript" src="{{ url('static', filename='highcharts.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='utilities.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='flows.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='highcharts.js') }}"></script>
 
 </body>
 </html>
