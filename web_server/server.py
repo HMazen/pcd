@@ -26,6 +26,8 @@ def after_request(response):
     return response
 
 
+
+
 def wsgi_app(environ, start_response):
     path = environ["PATH_INFO"]
     if path == "/":
@@ -62,8 +64,14 @@ def login():
 
 @app.route('/start_compaign')
 def start_compaign():
+    ipaddresses = []
+    try:
+        with open('/var/lib/shinken/modules/pcd/ipaddresses', 'r') as fh:
+            ipaddresses = fh.readlines()
+    except:
+        pass
     if session.get('logged_in'):
-        return render_template('start_compaign.html')
+        return render_template('start_compaign.html', ips=ipaddresses)
     return render_template('index.html', error='you must login')
 
 

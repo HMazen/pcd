@@ -92,10 +92,9 @@
 				  <div class="form-group">
 				    <label for="source_ip">Source IP</label>
 				    <select class="form-control" id="source_ip">
-						  <option value ="192.168.56.1">192.168.56.1</option>
-						  <option value="192.168.56.101">192.168.56.101</option>
-						  <option value="192.168.56.102">192.168.56.102</option>
-						  <option value="192.168.56.103">192.168.56.103</option>
+				    	{% for ip in ips %}
+						  <option value ="{{ ip }}">{{ ip }}</option>
+						{% endfor %}
 					 </select>
 				  </div>
 
@@ -103,10 +102,9 @@
 				 <div class="form-group">
 				    <label for="destination_ip">Destination IP</label>
                     <select class="form-control" id="destination_ip">
-						  <option value ="192.168.56.1">192.168.56.1</option>
-						  <option value="192.168.56.101">192.168.56.101</option>
-						  <option value="192.168.56.102">192.168.56.102</option>
-						  <option value="192.168.56.103">192.168.56.103</option>
+						  {% for ip in ips %}
+						  <option value ="{{ ip }}">{{ ip }}</option>
+						{% endfor %}
 					 </select>				  
 				</div>
 

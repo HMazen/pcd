@@ -40,7 +40,7 @@ class pcd_module_class(BaseModule):
     def hook_early_configuration(self, arb):
         try:
             logger.info('************** HOOK EARLY CONFIG CALLED **************')
-            fh = open('/etc/shinken/h', 'w')
+            fh = open('/var/lib/shinken/modules/pcd/ipaddresses', 'w')
             for h in arb.conf.hosts:
                 if not hasattr(h, 'address') and not hasattr(h, 'host_name'):
                     continue
@@ -50,8 +50,8 @@ class pcd_module_class(BaseModule):
                     addr = h.host_name
                 else:
                     addr = h.address
-                    fh.write(h.get_name() + ': ' + addr + '\n')
-                    fh.close()
+                fh.write(addr + '\n')
+            fh.close()
         except Exception as e:
             logger.info('hook_early_config: ' + str(e))
 
